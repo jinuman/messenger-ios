@@ -13,6 +13,12 @@ class MainViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "로그아웃", style: .plain, target: self, action: #selector(handleLogout))
+    }
+    
+    @objc func handleLogout() {
+        let loginVC = LoginViewController()
+        present(loginVC, animated: true, completion: nil)
     }
 
 }

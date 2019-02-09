@@ -12,6 +12,7 @@
 		369ABF55220E8E1D00363286 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF54220E8E1D00363286 /* Assets.xcassets */; };
 		369ABF58220E8E1D00363286 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF56220E8E1D00363286 /* LaunchScreen.storyboard */; };
 		369ABF64220ED0F600363286 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF63220ED0F600363286 /* LoginViewController.swift */; };
+		369ABF6A220ED2C500363286 /* UIKit+MyChatApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF69220ED2C500363286 /* UIKit+MyChatApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		369ABF57220E8E1D00363286 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		369ABF59220E8E1D00363286 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		369ABF63220ED0F600363286 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		369ABF69220ED2C500363286 /* UIKit+MyChatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIKit+MyChatApp.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				369ABF4D220E8E1D00363286 /* AppDelegate.swift */,
+				369ABF69220ED2C500363286 /* UIKit+MyChatApp.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -166,6 +169,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				369ABF6A220ED2C500363286 /* UIKit+MyChatApp.swift in Sources */,
 				369ABF64220ED0F600363286 /* LoginViewController.swift in Sources */,
 				369ABF50220E8E1D00363286 /* MainViewController.swift in Sources */,
 				369ABF4E220E8E1D00363286 /* AppDelegate.swift in Sources */,
