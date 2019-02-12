@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MainViewController.swift
 //  MyChatApp
 //
 //  Created by Jinwoo Kim on 09/02/2019.
@@ -7,13 +7,19 @@
 //
 
 import UIKit
+import Firebase
 
 class MainViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "로그아웃", style: .plain, target: self, action: #selector(handleLogout))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "로그아웃", style: .plain,
+                                                           target: self, action: #selector(handleLogout))
+        
+        let reference: DatabaseReference = Database.database().reference()
+        reference.updateChildValues(["someValue": 124])
+        
     }
     
     @objc func handleLogout() {
