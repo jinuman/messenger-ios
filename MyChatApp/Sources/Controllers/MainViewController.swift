@@ -14,7 +14,7 @@ class MainViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "로그아웃", style: .plain,
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain,
                                                            target: self, action: #selector(handleLogout))
         
         let reference: DatabaseReference = Database.database().reference()

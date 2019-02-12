@@ -30,7 +30,7 @@ class LoginViewController: UIViewController {
     let nameTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "이름"
+        textField.placeholder = "Name"
         return textField
     }()
     
@@ -44,7 +44,7 @@ class LoginViewController: UIViewController {
     let emailTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "이메일"
+        textField.placeholder = "Email"
         return textField
     }()
     
@@ -58,7 +58,7 @@ class LoginViewController: UIViewController {
     let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "비밀번호"
+        textField.placeholder = "Password"
         textField.isSecureTextEntry = true
         return textField
     }()
@@ -67,7 +67,7 @@ class LoginViewController: UIViewController {
         let button = UIButton(type: UIButton.ButtonType.system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.backgroundColor = UIColor(r: 80, g: 101, b: 161)
-        button.setTitle("가입", for: .normal)
+        button.setTitle("Register", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
         return button
