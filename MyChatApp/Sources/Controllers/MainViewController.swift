@@ -17,9 +17,6 @@ class MainViewController: UITableViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain,
                                                            target: self, action: #selector(handleLogout))
         
-        let reference: DatabaseReference = Database.database().reference()
-        reference.updateChildValues(["someValue": 124])
-        
     }
     
     @objc func handleLogout() {

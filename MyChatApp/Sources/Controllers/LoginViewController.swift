@@ -7,10 +7,11 @@
 //
 
 import UIKit
+import Firebase
 
 class LoginViewController: UIViewController {
 
-    let profileImageView: UIImageView = {
+    private let profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image = #imageLiteral(resourceName: "gameofthrones_splash")
@@ -18,7 +19,7 @@ class LoginViewController: UIViewController {
         return imageView
     }()
     
-    let inputsContainerView: UIView = {
+    private let inputsContainerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .white
@@ -27,35 +28,35 @@ class LoginViewController: UIViewController {
         return view
     }()
     
-    let nameTextField: UITextField = {
+    private let nameTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "Name"
         return textField
     }()
     
-    let nameSeparatorView: UIView = {
+    private let nameSeparatorView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = UIColor(r: 220, g: 220, b: 220)
         return view
     }()
     
-    let emailTextField: UITextField = {
+    private let emailTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "Email"
         return textField
     }()
     
-    let emailSeparatorView: UIView = {
+    private let emailSeparatorView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = UIColor(r: 220, g: 220, b: 220)
         return view
     }()
     
-    let passwordTextField: UITextField = {
+    private let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "Password"
@@ -63,15 +64,51 @@ class LoginViewController: UIViewController {
         return textField
     }()
     
-    let registerButton: UIButton = {
+    private lazy var registerButton: UIButton = {
         let button = UIButton(type: UIButton.ButtonType.system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.backgroundColor = UIColor(r: 80, g: 101, b: 161)
         button.setTitle("Register", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        
+        button.addTarget(self, action: #selector(handleRegister), for: .touchUpInside)
         return button
     }()
+    
+    @objc private func handleRegister() {
+        guard
+            let email = emailTextField.text,
+            let password = passwordTextField.text,
+            let name = nameTextField.text
+            else {
+                print("Form Invalid")
+                return
+        }
+        
+        
+        Auth.auth().createUser(withEmail: email, password: password) { (result: AuthDataResult?, error) in
+            if result != nil {
+                print("@@ Register success @@")
+            } else {
+                print("!! Register failed !!")
+            }
+            
+            // Successfully authenticated user
+            guard let uid = result?.user.uid else { return }
+            
+            let ref: DatabaseReference = Database.database().reference()
+            let usersReference = ref.child("users").child(uid)
+            let values = ["name": name, "email": email]
+            usersReference.updateChildValues(values, withCompletionBlock: { (err, ref) in
+                if err != nil {
+                    print(err ?? "")
+                    return
+                }
+                print("Saved user successfully!")
+            })
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -88,14 +125,14 @@ class LoginViewController: UIViewController {
     }
     
     // Constraints need x, y, width, height
-    func setupProfileImageView() {
+    private func setupProfileImageView() {
         profileImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         profileImageView.bottomAnchor.constraint(equalTo: inputsContainerView.topAnchor, constant: -12).isActive = true
         profileImageView.widthAnchor.constraint(equalToConstant: 150).isActive = true
         profileImageView.heightAnchor.constraint(equalTo: profileImageView.widthAnchor, multiplier: 1).isActive = true
     }
     
-    func setupInputsContainerView() {
+    private func setupInputsContainerView() {
         inputsContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         inputsContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         inputsContainerView.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
@@ -133,7 +170,7 @@ class LoginViewController: UIViewController {
         passwordTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/3).isActive = true
     }
     
-    func setupRegisterButton() {
+    private func setupRegisterButton() {
         registerButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         registerButton.topAnchor.constraint(equalTo: inputsContainerView.bottomAnchor, constant: 12).isActive = true
         registerButton.widthAnchor.constraint(equalTo: inputsContainerView.widthAnchor).isActive = true
