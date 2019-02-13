@@ -9,7 +9,7 @@
 import UIKit
 import Firebase
 
-class LoginViewController: UIViewController {
+class LoginController: UIViewController {
 
     private let profileImageView: UIImageView = {
         let imageView = UIImageView()

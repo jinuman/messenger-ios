@@ -9,7 +9,7 @@
 import UIKit
 import Firebase
 
-class MainViewController: UITableViewController {
+class MessagesController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,8 +31,7 @@ class MainViewController: UITableViewController {
             print(logoutError)
         }
         
-        let loginVC = LoginViewController()
-        present(loginVC, animated: true, completion: nil)
+        present(LoginController(), animated: true, completion: nil)
     }
 
 }
