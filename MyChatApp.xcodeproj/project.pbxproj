@@ -14,6 +14,8 @@
 		369ABF64220ED0F600363286 /* LoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF63220ED0F600363286 /* LoginController.swift */; };
 		369ABF6A220ED2C500363286 /* UIKit+MyChatApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF69220ED2C500363286 /* UIKit+MyChatApp.swift */; };
 		369ABF6C220F082500363286 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF6B220F082500363286 /* GoogleService-Info.plist */; };
+		36D988FC221426E700751C3E /* NewMessageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D988FB221426E700751C3E /* NewMessageController.swift */; };
+		36D988FF22142F2E00751C3E /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D988FE22142F2E00751C3E /* User.swift */; };
 		7FFEFE84594502A17D74DF4B /* Pods_MyChatApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C98C40C14749031C04E440A3 /* Pods_MyChatApp.framework */; };
 /* End PBXBuildFile section */
 
@@ -27,6 +29,8 @@
 		369ABF63220ED0F600363286 /* LoginController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginController.swift; sourceTree = "<group>"; };
 		369ABF69220ED2C500363286 /* UIKit+MyChatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIKit+MyChatApp.swift"; sourceTree = "<group>"; };
 		369ABF6B220F082500363286 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		36D988FB221426E700751C3E /* NewMessageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMessageController.swift; sourceTree = "<group>"; };
+		36D988FE22142F2E00751C3E /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		77C07655FA93E9B02C11B362 /* Pods-MyChatApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MyChatApp.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MyChatApp/Pods-MyChatApp.debug.xcconfig"; sourceTree = "<group>"; };
 		C98C40C14749031C04E440A3 /* Pods_MyChatApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MyChatApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5767A2A676F327CE073283D /* Pods-MyChatApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MyChatApp.release.xcconfig"; path = "Pods/Target Support Files/Pods-MyChatApp/Pods-MyChatApp.release.xcconfig"; sourceTree = "<group>"; };
@@ -76,6 +80,7 @@
 			isa = PBXGroup;
 			children = (
 				369ABF4F220E8E1D00363286 /* MessagesController.swift */,
+				36D988FB221426E700751C3E /* NewMessageController.swift */,
 				369ABF63220ED0F600363286 /* LoginController.swift */,
 			);
 			path = Controllers;
@@ -84,6 +89,7 @@
 		369ABF66220ED13900363286 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				36D988FD22142F1F00751C3E /* Models */,
 				369ABF68220ED15900363286 /* Shared */,
 				369ABF65220ED11E00363286 /* Controllers */,
 			);
@@ -107,6 +113,14 @@
 				369ABF69220ED2C500363286 /* UIKit+MyChatApp.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		36D988FD22142F1F00751C3E /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				36D988FE22142F2E00751C3E /* User.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		93196A4CE51FC9F56AE99FAE /* Frameworks */ = {
@@ -245,6 +259,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				369ABF6A220ED2C500363286 /* UIKit+MyChatApp.swift in Sources */,
+				36D988FC221426E700751C3E /* NewMessageController.swift in Sources */,
+				36D988FF22142F2E00751C3E /* User.swift in Sources */,
 				369ABF64220ED0F600363286 /* LoginController.swift in Sources */,
 				369ABF50220E8E1D00363286 /* MessagesController.swift in Sources */,
 				369ABF4E220E8E1D00363286 /* AppDelegate.swift in Sources */,

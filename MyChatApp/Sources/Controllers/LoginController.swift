@@ -1,5 +1,5 @@
 //
-//  LoginViewController.swift
+//  LoginController.swift
 //  MyChatApp
 //
 //  Created by Jinwoo Kim on 09/02/2019.
