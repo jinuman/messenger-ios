@@ -11,15 +11,21 @@ import Firebase
 
 class LoginController: UIViewController {
 
-    private let profileImageView: UIImageView = {
+    // extension은 같은 파일 안에서만 private 접근이 가능하다..
+    lazy var profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image = #imageLiteral(resourceName: "gameofthrones_splash")
         imageView.contentMode = .scaleAspectFill
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleSelectProfileImageView))
+        imageView.addGestureRecognizer(tapRecognizer)
+        
+        imageView.isUserInteractionEnabled = true
+        
         return imageView
     }()
     
-    private let loginRegisterSegmentedControl: UISegmentedControl = {
+    private lazy var loginRegisterSegmentedControl: UISegmentedControl = {
         let sc = UISegmentedControl(items: ["Login", "Register"])
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.tintColor = .white
@@ -66,7 +72,7 @@ class LoginController: UIViewController {
         passwordTextFieldHeightAnchor?.isActive = true
     }
     
-    private let inputsContainerView: UIView = {
+    let inputsContainerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .white
@@ -75,35 +81,35 @@ class LoginController: UIViewController {
         return view
     }()
     
-    private let nameTextField: UITextField = {
+    let nameTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "Name"
         return textField
     }()
     
-    private let nameSeparatorView: UIView = {
+    let nameSeparatorView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = UIColor(r: 220, g: 220, b: 220)
         return view
     }()
     
-    private let emailTextField: UITextField = {
+    let emailTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "Email"
         return textField
     }()
     
-    private let emailSeparatorView: UIView = {
+    let emailSeparatorView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = UIColor(r: 220, g: 220, b: 220)
         return view
     }()
     
-    private let passwordTextField: UITextField = {
+    let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "Password"
@@ -111,7 +117,7 @@ class LoginController: UIViewController {
         return textField
     }()
     
-    private lazy var loginRegisterButton: UIButton = {
+    lazy var loginRegisterButton: UIButton = {
         let button = UIButton(type: UIButton.ButtonType.system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.backgroundColor = UIColor(r: 80, g: 101, b: 161)
@@ -128,7 +134,7 @@ class LoginController: UIViewController {
         case 0:
             handleLogin()
         case 1:
-            handleRegister()
+        handleRegister()
         default:
             break
         }
@@ -156,45 +162,6 @@ class LoginController: UIViewController {
             }
             
             self.dismiss(animated: true, completion: nil)
-        }
-    }
-    
-    @objc private func handleRegister() {
-        guard
-            let email = emailTextField.text,
-            let password = passwordTextField.text,
-            let name = nameTextField.text
-            else {
-                print("Form is not valid")
-                return
-        }
-        
-        
-        Auth.auth().createUser(withEmail: email, password: password) { (result: AuthDataResult?, error) in
-            
-            if error != nil {
-                return
-            }
-            
-            if result != nil {
-                print("@@ Register success~")
-            } else {
-                print("## Account exists!! ")
-            }
-            
-            // Successfully authenticated user
-            guard let uid = result?.user.uid else { return }
-            
-            let ref: DatabaseReference = Database.database().reference()
-            let usersReference = ref.child("users").child(uid)
-            let values = ["name": name, "email": email]
-            usersReference.updateChildValues(values, withCompletionBlock: { [weak self] (err, ref) in
-                if err != nil {
-                    print(err ?? "")
-                    return
-                }
-                self?.dismiss(animated: true, completion: nil)
-            })
         }
     }
     
