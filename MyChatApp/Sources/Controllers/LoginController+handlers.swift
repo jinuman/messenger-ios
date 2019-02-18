@@ -24,7 +24,7 @@ extension LoginController {
             let password = passwordTextField.text,
             let name = nameTextField.text
             else {
-                print("@@@ Form is not valid!!")
+                print("@@ Register email or password form is not valid..")
                 return
         }
         
@@ -35,11 +35,11 @@ extension LoginController {
             }
             
             if error != nil {
-                print("@@@ \(error?.localizedDescription ?? "")")
+                print("@@ createUser: \(error?.localizedDescription ?? "")")
             }
             
             if result?.user != nil {
-                print("!!! Auth user success!!")
+                print("!! Auth user success !!")
             }
             
             guard let uid = result?.user.uid else {
@@ -56,13 +56,13 @@ extension LoginController {
             // first upload images to storage..
             storageRef.putData(uploadData, metadata: nil, completion: { [weak self] (metadata, error) in
                 if error != nil {
-                    print("@@ \(error?.localizedDescription ?? "")")
+                    print("@@ putData: \(error?.localizedDescription ?? "")")
                     return
                 }
                 // url 생성
                 storageRef.downloadURL(completion: { (url, error) in
                     if error != nil { 
-                        print("@@ \(error?.localizedDescription ?? "")")
+                        print("@@ downloadURL: \(error?.localizedDescription ?? "")")
                         return
                     }
                     guard let urlString = url?.absoluteString else {
@@ -81,8 +81,8 @@ extension LoginController {
         let ref: DatabaseReference = Database.database().reference()
         let usersReference = ref.child("users").child(uid)
         usersReference.updateChildValues(values, withCompletionBlock: { [weak self] (err, ref) in
-            if err != nil {
-                print("@@@ \(err!.localizedDescription)")
+            if let err = err {
+                print("@@ Register -> updateChildValues: \(err.localizedDescription)")
                 return
             } else {
                 print("!! Register Success !!")
