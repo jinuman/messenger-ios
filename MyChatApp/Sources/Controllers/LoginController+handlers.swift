@@ -61,7 +61,7 @@ extension LoginController {
                 }
                 // url 생성
                 storageRef.downloadURL(completion: { (url, error) in
-                    if error != nil {
+                    if error != nil { 
                         print("@@ \(error?.localizedDescription ?? "")")
                         return
                     }
@@ -77,7 +77,7 @@ extension LoginController {
         }
     }
     
-    private func registerUserIntoDatabaseWithUid(uid: String, values: [String: Any]) {
+    fileprivate func registerUserIntoDatabaseWithUid(uid: String, values: [String: Any]) {
         let ref: DatabaseReference = Database.database().reference()
         let usersReference = ref.child("users").child(uid)
         usersReference.updateChildValues(values, withCompletionBlock: { [weak self] (err, ref) in

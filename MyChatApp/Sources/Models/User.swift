@@ -11,21 +11,24 @@ import Foundation
 class User: NSObject {
     var name: String?
     var email: String?
+    var profileImageUrl: String?
     
-    init(name: String = "", email: String = "") {
+    init(name: String = "", email: String = "", profileImageUrl: String = "") {
         self.name = name
         self.email = email
+        self.profileImageUrl = profileImageUrl
     }
 }
 
 extension User {
     convenience init?(dictionary: [String: Any]) {
-
         guard
             let name = dictionary["name"] as? String,
-            let email = dictionary["email"] as? String
-            else { return nil }
-
-        self.init(name: name, email: email)
+            let email = dictionary["email"] as? String,
+            let profileImageUrl = dictionary["profileImageUrl"] as? String else {
+                return nil
+        }
+        self.init(name: name, email: email, profileImageUrl: profileImageUrl)
     }
 }
+
