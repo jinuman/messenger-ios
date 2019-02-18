@@ -50,7 +50,7 @@ extension LoginController {
             let imageName = UUID().uuidString
             
             let storageRef = Storage.storage().reference().child("profile_images").child("\(imageName).png")
-            guard let uploadData = self.profileImageView.image?.pngData() else {
+            guard let uploadData = self.profileImageView.image?.jpegData(compressionQuality: 0.1) else {
                 return
             }
             // first upload images to storage..
@@ -68,7 +68,7 @@ extension LoginController {
                     guard let urlString = url?.absoluteString else {
                         return
                     }
-                    print(urlString)
+                    // values 생성
                     let values = ["profileImageUrl": urlString, "name": name, "email": email]
                     self?.registerUserIntoDatabaseWithUid(uid: uid, values: values)
                 })
@@ -89,15 +89,18 @@ extension LoginController {
             }
             
             // If register success.. then setup navbar with registered user..
-            self?.messagesController?.fetchUserAndSetupNavBarTitle()
             
+            // Don't need full of this call..
+//            self?.messagesController?.fetchUserAndSetupNavBarTitle()
+            // Instead
+            self?.messagesController?.navigationItem.title = values["name"] as? String
             self?.dismiss(animated: true, completion: nil)
         })
     }
    
 }
 
-// MARK:- UIImagePickerControllerDelegate,
+// MARK:- Regarding imagePicker
 extension LoginController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         

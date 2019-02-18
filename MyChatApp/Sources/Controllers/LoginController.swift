@@ -147,21 +147,20 @@ class LoginController: UIViewController {
             let email = emailTextField.text,
             let password = passwordTextField.text
             else {
-                print("Form is not valid")
+                print("@@ Login: Form is not valid")
                 return
         }
         
         Auth.auth().signIn(withEmail: email, password: password) { (result, error) in
-            if result != nil {
-                print("@@ Login Success!")
-            } else {
-                print("## Login Failed..-_-")
-            }
-            
-            if error != nil {
-                print("## Sign in error occurred..")
+            if let error = error {
+                print("@@ signIn: \(error.localizedDescription)")
                 return
             }
+            if result?.user != nil {
+                print("!! Login Success !!")
+            }
+            
+            self.messagesController?.fetchUserAndSetupNavBarTitle()
             
             self.dismiss(animated: true, completion: nil)
         }
