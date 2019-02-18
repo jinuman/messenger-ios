@@ -39,7 +39,7 @@ extension LoginController {
             }
             
             if result?.user != nil {
-                print("!!! Register success!!")
+                print("!!! Auth user success!!")
             }
             
             guard let uid = result?.user.uid else {
@@ -84,7 +84,13 @@ extension LoginController {
             if err != nil {
                 print("@@@ \(err!.localizedDescription)")
                 return
+            } else {
+                print("!! Register Success !!")
             }
+            
+            // If register success.. then setup navbar with registered user..
+            self?.messagesController?.fetchUserAndSetupNavBarTitle()
+            
             self?.dismiss(animated: true, completion: nil)
         })
     }

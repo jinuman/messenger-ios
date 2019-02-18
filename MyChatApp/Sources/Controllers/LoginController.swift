@@ -10,6 +10,8 @@ import UIKit
 import Firebase
 
 class LoginController: UIViewController {
+    
+    var messagesController: MessagesController?
 
     // extension은 같은 파일 안에서만 private 접근이 가능하다..
     lazy var profileImageView: UIImageView = {

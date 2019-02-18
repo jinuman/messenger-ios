@@ -33,16 +33,20 @@ class MessagesController: UITableViewController {
         if Auth.auth().currentUser?.uid == nil {
             perform(#selector(handleLogout), with: nil, afterDelay: 0)
         } else {
-            guard let uid = Auth.auth().currentUser?.uid else { return }
-            Database.database().reference().child("users").child(uid)
-                // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values..
-                .observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
-//                    print("What is snapshot? \(snapshot)")
-                    
-                    if let dic = snapshot.value as? [String: Any] {
-                        self?.navigationItem.title = dic["name"] as? String
-                    }
-            }
+            fetchUserAndSetupNavBarTitle()
+        }
+    }
+    
+    func fetchUserAndSetupNavBarTitle() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        Database.database().reference().child("users").child(uid)
+            // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values..
+            .observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
+                if let dic = snapshot.value as? [String: Any] {
+                    self?.navigationItem.title = dic["name"] as? String
+                }
         }
     }
     
@@ -52,8 +56,9 @@ class MessagesController: UITableViewController {
         } catch let logoutError {
             print(logoutError)
         }
-        
-        present(LoginController(), animated: true, completion: nil)
+        let loginController = LoginController()
+        loginController.messagesController = self
+        present(loginController, animated: true, completion: nil)
     }
 
 }
