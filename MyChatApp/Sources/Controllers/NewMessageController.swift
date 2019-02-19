@@ -27,10 +27,12 @@ class NewMessageController: UITableViewController {
             guard
                 let self = self,
                 let dictionary = snapshot.value as? [String: Any],
-                let user = User(dictionary: dictionary) else { return }
+                let user = User(dictionary: dictionary) else {
+                    return
+            }
             self.users.append(user)
             
-            // Let's use Dispatch.main ... (observe: Firebase 비동기 작업 큐 & tableView 업데이트: main 큐)
+            // 비동기 작업 안에서 화면을 동기화하는 방법.. DispatchQueue.main 쓰자..
             DispatchQueue.main.async { [weak self] in
                 self?.tableView.reloadData()    // tableView 동기화
             }

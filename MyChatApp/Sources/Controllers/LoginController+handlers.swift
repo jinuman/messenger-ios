@@ -12,6 +12,7 @@ import Firebase
 extension LoginController {
     @objc func handleSelectProfileImageView() {
         let picker = UIImagePickerController()
+        picker.sourceType = .photoLibrary
         picker.delegate = self
         picker.allowsEditing = true
         present(picker, animated: true, completion: nil)
@@ -93,7 +94,12 @@ extension LoginController {
             // Don't need full of this call..
 //            self?.messagesController?.fetchUserAndSetupNavBarTitle()
             // Instead
-            self?.messagesController?.navigationItem.title = values["name"] as? String
+//            self?.messagesController?.navigationItem.title = values["name"] as? String
+            guard let user = User(dictionary: values) else {
+                return
+            }
+            self?.messagesController?.setupNavBarWithUser(user: user)
+            
             self?.dismiss(animated: true, completion: nil)
         })
     }
@@ -118,7 +124,6 @@ extension LoginController: UIImagePickerControllerDelegate, UINavigationControll
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        print("cancel")
         dismiss(animated: true, completion: nil)
     }
 }

@@ -20,7 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
-        
+    
         let rootVC = MessagesController()
         window?.rootViewController = UINavigationController(rootViewController: rootVC)
         
