@@ -19,6 +19,10 @@ class NewMessageController: UITableViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: UIBarButtonItem.Style.plain,
                                                            target: self, action: #selector(handleCancel))
         tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         fetchUser()
     }
     
