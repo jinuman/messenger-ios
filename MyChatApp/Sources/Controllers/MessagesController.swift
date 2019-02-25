@@ -11,6 +11,12 @@ import Firebase
 
 class MessagesController: UITableViewController {
 
+    let chatLogController: ChatLogController = {
+        let vc = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
+        return vc
+    }()
+    
+    // MARK:- View LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -20,6 +26,13 @@ class MessagesController: UITableViewController {
                                                             target: self, action: #selector(handleNewMessage))
         
         checkIfUserIsLoggedIn()
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showChatController))
+        self.navigationController?.navigationBar.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func showChatController() {
+        navigationController?.pushViewController(chatLogController, animated: true)
     }
     
     @objc private func handleNewMessage() {
