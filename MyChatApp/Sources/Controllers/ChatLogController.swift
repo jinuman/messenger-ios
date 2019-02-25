@@ -11,10 +11,11 @@ import Firebase
 
 class ChatLogController: UICollectionViewController {
     
-    let inputTextField: UITextField = {
+    lazy var inputTextField: UITextField = {
         let tf = UITextField()
         tf.translatesAutoresizingMaskIntoConstraints = false
         tf.placeholder = "Enter message..."
+        tf.delegate = self
         return tf
     }()
     
@@ -71,6 +72,19 @@ class ChatLogController: UICollectionViewController {
     }
     
     @objc private func handleSend() {
-        
+        let ref: DatabaseReference = Database.database().reference()
+        let messagesRef = ref.child("messages").childByAutoId()
+        guard let text = inputTextField.text else {
+            return
+        }
+        let values = ["text": text]
+        messagesRef.updateChildValues(values)
+    }
+}
+
+extension ChatLogController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        handleSend()
+        return true
     }
 }
