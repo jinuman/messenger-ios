@@ -9,9 +9,14 @@
 import UIKit
 import Firebase
 
+protocol LoginControllerDelegate: class {
+    func setupNavBarWithUser(user: User)
+    func fetchUserAndSetupNavBarTitle()
+}
+
 class LoginController: UIViewController {
     
-    var messagesController: MessagesController?
+    weak var delegate: LoginControllerDelegate?
 
     // extension은 같은 파일 안에서만 private 접근이 가능하다..
     lazy var profileImageView: UIImageView = {
@@ -160,7 +165,7 @@ class LoginController: UIViewController {
                 print("!! Login Success !!")
             }
             
-            self.messagesController?.fetchUserAndSetupNavBarTitle()
+            self.delegate?.fetchUserAndSetupNavBarTitle()
             
             self.dismiss(animated: true, completion: nil)
         }

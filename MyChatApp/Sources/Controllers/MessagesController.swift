@@ -50,24 +50,20 @@ class MessagesController: UITableViewController {
         }
     }
     
-    func fetchUserAndSetupNavBarTitle() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
+    @objc func handleLogout() {
+        do {
+            try Auth.auth().signOut()
+        } catch let logoutError {
+            print(logoutError)
         }
-        Database.database().reference().child("users").child(uid)
-            // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values..
-            .observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
-                guard
-                    let self = self,
-                    let dic = snapshot.value as? [String: Any],
-                    let user = User(dictionary: dic) else {
-                        return
-                }
-                
-                self.setupNavBarWithUser(user: user)
-        }
+        let loginController = LoginController()
+        loginController.delegate = self
+        present(loginController, animated: true, completion: nil)
     }
-    
+
+}
+
+extension MessagesController: LoginControllerDelegate {
     func setupNavBarWithUser(user: User) {
         
         let containerView = UIView()
@@ -103,16 +99,22 @@ class MessagesController: UITableViewController {
         self.navigationItem.titleView = containerView
     }
     
-    @objc func handleLogout() {
-        do {
-            try Auth.auth().signOut()
-        } catch let logoutError {
-            print(logoutError)
+    func fetchUserAndSetupNavBarTitle() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
         }
-        let loginController = LoginController()
-        loginController.messagesController = self
-        present(loginController, animated: true, completion: nil)
+        Database.database().reference().child("users").child(uid)
+            // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values..
+            .observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
+                guard
+                    let self = self,
+                    let dic = snapshot.value as? [String: Any],
+                    let user = User(dictionary: dic) else {
+                        return
+                }
+                
+                self.setupNavBarWithUser(user: user)
+        }
     }
-
 }
 

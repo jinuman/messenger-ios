@@ -98,7 +98,7 @@ extension LoginController {
             guard let user = User(dictionary: values) else {
                 return
             }
-            self?.messagesController?.setupNavBarWithUser(user: user)
+            self?.delegate?.setupNavBarWithUser(user: user)
             
             self?.dismiss(animated: true, completion: nil)
         })
