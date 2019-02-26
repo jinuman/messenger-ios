@@ -10,12 +10,18 @@ import UIKit
 import Firebase
 
 protocol LoginControllerDelegate: class {
-    func setupNavBarWithUser(user: User)
+//    func setupNavBarWithUser(user: User)
+    func setupNavBar(with name: String)
     func fetchUserAndSetupNavBarTitle()
 }
 
 // Show Login & Register view
 class LoginController: UIViewController {
+    
+    let messagesController: MessagesController = {
+        let vc = MessagesController()
+        return vc
+    }()
     
     // MARK:- LoginControllerDelegate property
     weak var delegate: LoginControllerDelegate?

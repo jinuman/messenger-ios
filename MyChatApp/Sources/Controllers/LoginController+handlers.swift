@@ -10,6 +10,7 @@ import UIKit
 import Firebase
 
 extension LoginController {
+    
     // MARK:- Event handling methods
     @objc func handleSelectProfileImageView() {
         let picker = UIImagePickerController()
@@ -52,7 +53,7 @@ extension LoginController {
             let imageName = UUID().uuidString
             
             let storageRef = Storage.storage().reference().child("profile_images").child("\(imageName).png")
-            guard let uploadData = self.profileImageView.image?.jpegData(compressionQuality: 0.1) else {
+            guard let uploadData = self.profileImageView.image?.jpegData(compressionQuality: 0.05) else {
                 return
             }
             // first upload images to storage..
@@ -83,25 +84,30 @@ extension LoginController {
         let ref: DatabaseReference = Database.database().reference()
         let usersReference = ref.child("users").child(uid)
         usersReference.updateChildValues(values, withCompletionBlock: { [weak self] (err, ref) in
+            guard
+                let self = self,
+                let name = values["name"] as? String else {
+                    return
+            }
             if let err = err {
                 print("@@ Register -> updateChildValues: \(err.localizedDescription)")
                 return
             } else {
                 print("!! Register Success !!")
             }
-            
             // If register success.. then setup navbar with registered user..
             
             // Don't need full of this call..
 //            self?.messagesController?.fetchUserAndSetupNavBarTitle()
             // Instead
-//            self?.messagesController?.navigationItem.title = values["name"] as? String
-            guard let user = User(dictionary: values) else {
-                return
-            }
-            self?.delegate?.setupNavBarWithUser(user: user)
+            self.delegate?.setupNavBar(with: name)
+//            self.messagesController.navigationItem.title = values["name"] as? String
+//            guard let user = User(dictionary: values) else {
+//                return
+//            }
+//            self.delegate?.setupNavBarWithUser(user: user)
             
-            self?.dismiss(animated: true, completion: nil)
+            self.dismiss(animated: true, completion: nil)
         })
     }
    

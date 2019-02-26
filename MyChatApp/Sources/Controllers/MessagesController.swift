@@ -9,14 +9,12 @@
 import UIKit
 import Firebase
 
+protocol MessagesControllerDelegate: class {
+    func setNavBarTitle()
+}
+
 // Show user's messages view - Root
 class MessagesController: UITableViewController {
-
-    // MARK:- Other Controllers properties
-    let chatLogController: ChatLogController = {
-        let vc = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
-        return vc
-    }()
     
     // MARK:- View Life Cycle
     override func viewDidLoad() {
@@ -29,8 +27,8 @@ class MessagesController: UITableViewController {
         
         checkIfUserIsLoggedIn()
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showChatController))
-        self.navigationController?.navigationBar.addGestureRecognizer(tapGesture)
+//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showChatController))
+//        self.navigationController?.navigationBar.addGestureRecognizer(tapGesture)
     }
     
     // MARK:- Methods
@@ -43,12 +41,9 @@ class MessagesController: UITableViewController {
         }
     }
     
-    @objc private func showChatController() {
-        navigationController?.pushViewController(chatLogController, animated: true)
-    }
-    
     @objc private func handleNewMessage() {
         let newMessageController = NewMessageController()
+        newMessageController.delegate = self
         let navController = UINavigationController(rootViewController: newMessageController)
         present(navController, animated: true, completion: nil)
     }
@@ -68,41 +63,6 @@ class MessagesController: UITableViewController {
 
 // MARK:- Regarding Custom LoginControllerDelegate
 extension MessagesController: LoginControllerDelegate {
-    func setupNavBarWithUser(user: User) {
-        
-        let containerView = UIView()
-        
-        let profileImageView = UIImageView()
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        profileImageView.contentMode = .scaleAspectFill
-        profileImageView.layer.cornerRadius = 20
-        profileImageView.clipsToBounds = true
-        guard let urlString = user.profileImageUrl else {
-            return
-        }
-        profileImageView.loadImageUsingCacheWithUrlString(urlString)
-        
-        containerView.addSubview(profileImageView)
-        // need x, y, width, height
-        profileImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
-        profileImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 40).isActive = true
-        profileImageView.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        
-        let nameLabel = UILabel()
-        nameLabel.text = user.name
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        containerView.addSubview(nameLabel)
-        // need x, y, width, height
-        nameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8).isActive = true
-        nameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor).isActive = true
-        nameLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor).isActive = true
-        nameLabel.heightAnchor.constraint(equalTo: profileImageView.heightAnchor).isActive = true
-        
-        self.navigationItem.titleView = containerView
-    }
-    
     func fetchUserAndSetupNavBarTitle() {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
@@ -112,13 +72,56 @@ extension MessagesController: LoginControllerDelegate {
             .observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
                 guard
                     let self = self,
-                    let dic = snapshot.value as? [String: Any],
-                    let user = User(dictionary: dic) else {
+                    let dictionary = snapshot.value as? [String: Any] else {
                         return
                 }
-                
-                self.setupNavBarWithUser(user: user)
+                self.navigationItem.title = dictionary["name"] as? String
+//                self.setupNavBarWithUser(user: user)
         }
+    }
+    
+    func setupNavBar(with name: String) {
+        self.navigationItem.title = name
+    }
+//    func setupNavBarWithUser(user: User) {
+//        let containerView = UIView()
+//
+//        let profileImageView = UIImageView()
+//        profileImageView.translatesAutoresizingMaskIntoConstraints = false
+//        profileImageView.contentMode = .scaleAspectFill
+//        profileImageView.layer.cornerRadius = 20
+//        profileImageView.clipsToBounds = true
+//        guard let urlString = user.profileImageUrl else {
+//            return
+//        }
+//        profileImageView.loadImageUsingCacheWithUrlString(urlString)
+//
+//        containerView.addSubview(profileImageView)
+//        // need x, y, width, height
+//        profileImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
+//        profileImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+//        profileImageView.widthAnchor.constraint(equalToConstant: 40).isActive = true
+//        profileImageView.heightAnchor.constraint(equalToConstant: 40).isActive = true
+//
+//        let nameLabel = UILabel()
+//        nameLabel.text = user.name
+//        nameLabel.translatesAutoresizingMaskIntoConstraints = false
+//
+//        containerView.addSubview(nameLabel)
+//        // need x, y, width, height
+//        nameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8).isActive = true
+//        nameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor).isActive = true
+//        nameLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor).isActive = true
+//        nameLabel.heightAnchor.constraint(equalTo: profileImageView.heightAnchor).isActive = true
+//
+//        self.navigationItem.titleView = containerView
+//    }
+}
+
+extension MessagesController: NewMessageControllerDelegate {
+    @objc internal func showChatController(for user: User) {
+        let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
+        navigationController?.pushViewController(chatLogController, animated: true)
     }
 }
 

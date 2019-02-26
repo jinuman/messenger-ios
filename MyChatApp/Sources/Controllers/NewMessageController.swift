@@ -9,8 +9,14 @@
 import UIKit
 import Firebase
 
+protocol NewMessageControllerDelegate: class {
+    func showChatController(for user: User)
+}
+
 // Show new message view in terms of sending messages
 class NewMessageController: UITableViewController {
+    
+    weak var delegate: NewMessageControllerDelegate?
     
     // MARK:- Properties
     private let cellId = "userCell"
@@ -72,6 +78,16 @@ class NewMessageController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 96
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        dismiss(animated: true) { [weak self] in
+            guard let self = self else {
+                return
+            }
+            let user = self.users[indexPath.row]
+            self.delegate?.showChatController(for: user)
+        }
     }
     
 }
