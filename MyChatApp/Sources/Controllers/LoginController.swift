@@ -14,11 +14,13 @@ protocol LoginControllerDelegate: class {
     func fetchUserAndSetupNavBarTitle()
 }
 
+// Show Login & Register view
 class LoginController: UIViewController {
     
+    // MARK:- LoginControllerDelegate property
     weak var delegate: LoginControllerDelegate?
 
-    // extension은 같은 파일 안에서만 private 접근이 가능하다..
+    // MARK:- View properties
     lazy var profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -40,44 +42,6 @@ class LoginController: UIViewController {
         sc.addTarget(self, action: #selector(handleLoginRegisterChange), for: .valueChanged)
         return sc
     }()
-    
-    // MARK:- Variable HeightAnchors
-    private var inputsContainerViewHeightAnchor: NSLayoutConstraint?
-    private var nameTextFieldHeightAnchor: NSLayoutConstraint?
-    private var emailTextFieldHeightAnchor: NSLayoutConstraint?
-    private var passwordTextFieldHeightAnchor: NSLayoutConstraint?
-    
-    // MARK:-
-    @objc private func handleLoginRegisterChange() {
-        let index = loginRegisterSegmentedControl.selectedSegmentIndex
-        let title = loginRegisterSegmentedControl.titleForSegment(at: index)
-        loginRegisterButton.setTitle(title, for: .normal)
-        
-        // Change height of inputsContainerView.
-        inputsContainerViewHeightAnchor?.constant = index == 0 ? 100 : 150
-        
-        // Change height of name, email, password TextField
-        nameTextFieldHeightAnchor?.isActive = false
-        nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor,
-                                                                          multiplier: index == 0
-                                                                            ? 0
-                                                                            : 1/3)
-        nameTextFieldHeightAnchor?.isActive = true
-        
-        emailTextFieldHeightAnchor?.isActive = false
-        emailTextFieldHeightAnchor = emailTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor,
-                                                                          multiplier: index == 0
-                                                                            ? 1/2
-                                                                            : 1/3)
-        emailTextFieldHeightAnchor?.isActive = true
-        
-        passwordTextFieldHeightAnchor?.isActive = false
-        passwordTextFieldHeightAnchor = passwordTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor,
-                                                                            multiplier: index == 0
-                                                                                ? 1/2
-                                                                                : 1/3)
-        passwordTextFieldHeightAnchor?.isActive = true
-    }
     
     let inputsContainerView: UIView = {
         let view = UIView()
@@ -136,12 +100,71 @@ class LoginController: UIViewController {
         return button
     }()
     
+    // MARK:- Variable HeightAnchors
+    private var inputsContainerViewHeightAnchor: NSLayoutConstraint?
+    private var nameTextFieldHeightAnchor: NSLayoutConstraint?
+    private var emailTextFieldHeightAnchor: NSLayoutConstraint?
+    private var passwordTextFieldHeightAnchor: NSLayoutConstraint?
+    
+    // MARK:- View Life cycle methods
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        view.backgroundColor = UIColor(r: 61, g: 91, b: 151)
+        
+        view.addSubview(profileImageView)
+        view.addSubview(loginRegisterSegmentedControl)
+        view.addSubview(inputsContainerView)
+        view.addSubview(loginRegisterButton)
+        
+        setupProfileImageView()
+        setupLoginRegisterSegmentedControl()
+        setupInputsContainerView()
+        setupRegisterButton()
+    }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
+    
+    // MARK:- Event Handling methods
+    @objc private func handleLoginRegisterChange() {
+        let index = loginRegisterSegmentedControl.selectedSegmentIndex
+        let title = loginRegisterSegmentedControl.titleForSegment(at: index)
+        loginRegisterButton.setTitle(title, for: .normal)
+        
+        // Change height of inputsContainerView.
+        inputsContainerViewHeightAnchor?.constant = index == 0 ? 100 : 150
+        
+        // Change height of name, email, password TextField
+        nameTextFieldHeightAnchor?.isActive = false
+        nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor,
+                                                                          multiplier: index == 0
+                                                                            ? 0
+                                                                            : 1/3)
+        nameTextFieldHeightAnchor?.isActive = true
+        
+        emailTextFieldHeightAnchor?.isActive = false
+        emailTextFieldHeightAnchor = emailTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor,
+                                                                            multiplier: index == 0
+                                                                                ? 1/2
+                                                                                : 1/3)
+        emailTextFieldHeightAnchor?.isActive = true
+        
+        passwordTextFieldHeightAnchor?.isActive = false
+        passwordTextFieldHeightAnchor = passwordTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor,
+                                                                                  multiplier: index == 0
+                                                                                    ? 1/2
+                                                                                    : 1/3)
+        passwordTextFieldHeightAnchor?.isActive = true
+    }
+    
     @objc private func handleLoginRegister() {
         switch loginRegisterSegmentedControl.selectedSegmentIndex {
         case 0:
             handleLogin()
         case 1:
-        handleRegister()
+            handleRegister()
         default:
             break
         }
@@ -169,23 +192,6 @@ class LoginController: UIViewController {
             
             self.dismiss(animated: true, completion: nil)
         }
-    }
-    
-    // MARK:- View Life cycle methods
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        view.backgroundColor = UIColor(r: 61, g: 91, b: 151)
-        
-        view.addSubview(profileImageView)
-        view.addSubview(loginRegisterSegmentedControl)
-        view.addSubview(inputsContainerView)
-        view.addSubview(loginRegisterButton)
-        
-        setupProfileImageView()
-        setupLoginRegisterSegmentedControl()
-        setupInputsContainerView()
-        setupRegisterButton()
     }
     
     // MARK:- Setting up layout methods
@@ -252,9 +258,4 @@ class LoginController: UIViewController {
         loginRegisterButton.widthAnchor.constraint(equalTo: inputsContainerView.widthAnchor).isActive = true
         loginRegisterButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
     }
-    
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
-    }
-
 }

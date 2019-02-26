@@ -9,14 +9,16 @@
 import UIKit
 import Firebase
 
+// Show user's messages view - Root
 class MessagesController: UITableViewController {
 
+    // MARK:- Other Controllers properties
     let chatLogController: ChatLogController = {
         let vc = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
         return vc
     }()
     
-    // MARK:- View LifeCycle
+    // MARK:- View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -31,6 +33,16 @@ class MessagesController: UITableViewController {
         self.navigationController?.navigationBar.addGestureRecognizer(tapGesture)
     }
     
+    // MARK:- Methods
+    private func checkIfUserIsLoggedIn() {
+        // if user is not logged in
+        if Auth.auth().currentUser?.uid == nil {
+            perform(#selector(handleLogout), with: nil, afterDelay: 0)
+        } else {
+            fetchUserAndSetupNavBarTitle()
+        }
+    }
+    
     @objc private func showChatController() {
         navigationController?.pushViewController(chatLogController, animated: true)
     }
@@ -39,15 +51,6 @@ class MessagesController: UITableViewController {
         let newMessageController = NewMessageController()
         let navController = UINavigationController(rootViewController: newMessageController)
         present(navController, animated: true, completion: nil)
-    }
-    
-    private func checkIfUserIsLoggedIn() {
-        // if user is not logged in
-        if Auth.auth().currentUser?.uid == nil {
-            perform(#selector(handleLogout), with: nil, afterDelay: 0)
-        } else {
-            fetchUserAndSetupNavBarTitle()
-        }
     }
     
     @objc func handleLogout() {
@@ -63,6 +66,7 @@ class MessagesController: UITableViewController {
 
 }
 
+// MARK:- Regarding Custom LoginControllerDelegate
 extension MessagesController: LoginControllerDelegate {
     func setupNavBarWithUser(user: User) {
         

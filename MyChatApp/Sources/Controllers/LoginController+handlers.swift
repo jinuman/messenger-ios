@@ -10,6 +10,7 @@ import UIKit
 import Firebase
 
 extension LoginController {
+    // MARK:- Event handling methods
     @objc func handleSelectProfileImageView() {
         let picker = UIImagePickerController()
         picker.sourceType = .photoLibrary
@@ -106,7 +107,7 @@ extension LoginController {
    
 }
 
-// MARK:- Regarding imagePicker
+// MARK:- Regarding Image Picker
 extension LoginController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         

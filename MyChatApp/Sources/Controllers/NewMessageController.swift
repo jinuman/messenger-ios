@@ -9,11 +9,14 @@
 import UIKit
 import Firebase
 
+// Show new message view in terms of sending messages
 class NewMessageController: UITableViewController {
     
+    // MARK:- Properties
     private let cellId = "userCell"
     private var users = [User]()
     
+    // MARK:- View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: UIBarButtonItem.Style.plain,
@@ -47,13 +50,12 @@ class NewMessageController: UITableViewController {
         dismiss(animated: true, completion: nil)
     }
     
+    // MARK:- Regarding tableView
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return users.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // need "dequeue" cells for memory efficiency!!
-//        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: cellId)
         guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? UserCell else {
             fatalError("User cell is not valid")
         }
@@ -64,23 +66,6 @@ class NewMessageController: UITableViewController {
         if let profileImageUrl = user.profileImageUrl {
             // better way using cache
             cell.profileImageView.loadImageUsingCacheWithUrlString(profileImageUrl)
-            
-            // old way...
-//            guard let url = URL(string: profileImageUrl) else {
-//                fatalError("url error")
-//            }
-//            cell.profileImageView.image = nil
-//            URLSession.shared.dataTask(with: url) { (data, response, error) in
-//                if error != nil {
-//                    print("@@@ \(error?.localizedDescription ?? "")")
-//                }
-//                guard let data = data else {
-//                    return
-//                }
-//                DispatchQueue.main.async {
-//                    cell.profileImageView.image = UIImage(data: data)
-//                }
-//            }.resume()
         }
         return cell
     }
@@ -91,8 +76,9 @@ class NewMessageController: UITableViewController {
     
 }
 
+// MARK:- Inside NewMessageController table view
 class UserCell: UITableViewCell {
-    
+    // MARK:- User Cell properties
     let profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -103,6 +89,8 @@ class UserCell: UITableViewCell {
         return imageView
     }()
     
+    // You should use the same reuse identifier for all cells of the same form.
+    // MARK:- Cell Initializer
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
         
@@ -110,6 +98,11 @@ class UserCell: UITableViewCell {
         setupProfileImageViewInCell()
     }
     
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK:- Setting up cell properties
     private func setupProfileImageViewInCell() {
         // need x, y, width, height
         profileImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
@@ -129,9 +122,5 @@ class UserCell: UITableViewCell {
                                  width: textLabel.frame.width, height: textLabel.frame.height)
         detailTextLabel.frame = CGRect(x: 64, y: detailTextLabel.frame.origin.y + 2,
                                        width: detailTextLabel.frame.width, height: detailTextLabel.frame.height)
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 }
