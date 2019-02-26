@@ -9,11 +9,12 @@
 import Foundation
 
 class User: NSObject {
+    var id: String?
     var name: String?
     var email: String?
     var profileImageUrl: String?
     
-    init(name: String = "", email: String = "", profileImageUrl: String = "") {
+    init(name: String, email: String, profileImageUrl: String) {
         self.name = name
         self.email = email
         self.profileImageUrl = profileImageUrl

@@ -15,6 +15,9 @@ protocol MessagesControllerDelegate: class {
 
 // Show user's messages view - Root
 class MessagesController: UITableViewController {
+    // MARK:- Properties
+    var messages: [Message] = []
+    let cellId = "MessagesCellId"
     
     // MARK:- View Life Cycle
     override func viewDidLoad() {
@@ -25,8 +28,9 @@ class MessagesController: UITableViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: #imageLiteral(resourceName: "new_message_icon"), style: .plain,
                                                             target: self, action: #selector(handleNewMessage))
         
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellId)
         checkIfUserIsLoggedIn()
-        
+        observeMessages()
 //        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showChatController))
 //        self.navigationController?.navigationBar.addGestureRecognizer(tapGesture)
     }
@@ -38,6 +42,23 @@ class MessagesController: UITableViewController {
             perform(#selector(handleLogout), with: nil, afterDelay: 0)
         } else {
             fetchUserAndSetupNavBarTitle()
+        }
+    }
+    
+    private func observeMessages() {
+        let ref = Database.database().reference().child("messages")
+        ref.observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
+            guard
+                let self = self,
+                let dictionary = snapshot.value as? [String: Any],
+                let message = Message(dictionary: dictionary) else {
+                    return
+            }
+            self.messages.append(message)
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.tableView.reloadData()
+            }
         }
     }
     
@@ -58,8 +79,21 @@ class MessagesController: UITableViewController {
         loginController.delegate = self
         present(loginController, animated: true, completion: nil)
     }
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return messages.count
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
+        
+        let message = messages[indexPath.row]
+        cell.textLabel?.text = message.text
+        return cell
+    }
 
 }
+
 
 // MARK:- Regarding Custom LoginControllerDelegate
 extension MessagesController: LoginControllerDelegate {
@@ -67,16 +101,16 @@ extension MessagesController: LoginControllerDelegate {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        Database.database().reference().child("users").child(uid)
-            // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values..
-            .observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
-                guard
-                    let self = self,
-                    let dictionary = snapshot.value as? [String: Any] else {
-                        return
-                }
-                self.navigationItem.title = dictionary["name"] as? String
-//                self.setupNavBarWithUser(user: user)
+        let ref = Database.database().reference()
+        // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values..
+        ref.child("users").child(uid).observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
+            guard
+                let self = self,
+                let dictionary = snapshot.value as? [String: Any] else {
+                    return
+            }
+            self.navigationItem.title = dictionary["name"] as? String
+//            self.setupNavBarWithUser(user: user)
         }
     }
     
@@ -121,6 +155,7 @@ extension MessagesController: LoginControllerDelegate {
 extension MessagesController: NewMessageControllerDelegate {
     @objc internal func showChatController(for user: User) {
         let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
+        chatLogController.user = user
         navigationController?.pushViewController(chatLogController, animated: true)
     }
 }

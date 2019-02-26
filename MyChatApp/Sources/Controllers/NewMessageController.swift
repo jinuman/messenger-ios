@@ -36,13 +36,15 @@ class NewMessageController: UITableViewController {
     }
     
     private func fetchUser() {
-        Database.database().reference().child("users").observe(DataEventType.childAdded) { [weak self] (snapshot: DataSnapshot) in
+        let ref = Database.database().reference()
+        ref.child("users").observe(DataEventType.childAdded) { [weak self] (snapshot: DataSnapshot) in
             guard
                 let self = self,
                 let dictionary = snapshot.value as? [String: Any],
                 let user = User(dictionary: dictionary) else {
                     return
             }
+            user.id = snapshot.key
             self.users.append(user)
             
             // 비동기 작업 안에서 화면을 동기화하는 방법.. DispatchQueue.main 쓰자..
