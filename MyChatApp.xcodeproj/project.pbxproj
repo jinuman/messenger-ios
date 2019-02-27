@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3651A670222529A200185647 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3651A66F222529A200185647 /* Message.swift */; };
+		3651A67322266C9B00185647 /* UserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3651A67222266C9B00185647 /* UserCell.swift */; };
 		369ABF4E220E8E1D00363286 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF4D220E8E1D00363286 /* AppDelegate.swift */; };
 		369ABF50220E8E1D00363286 /* MessagesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF4F220E8E1D00363286 /* MessagesController.swift */; };
 		369ABF55220E8E1D00363286 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF54220E8E1D00363286 /* Assets.xcassets */; };
@@ -24,6 +25,7 @@
 
 /* Begin PBXFileReference section */
 		3651A66F222529A200185647 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		3651A67222266C9B00185647 /* UserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCell.swift; sourceTree = "<group>"; };
 		369ABF4A220E8E1D00363286 /* MyChatApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyChatApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		369ABF4D220E8E1D00363286 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		369ABF4F220E8E1D00363286 /* MessagesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesController.swift; sourceTree = "<group>"; };
@@ -54,6 +56,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3651A67122266C5300185647 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				3651A67222266C9B00185647 /* UserCell.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		369ABF41220E8E1D00363286 = {
 			isa = PBXGroup;
 			children = (
@@ -97,8 +107,9 @@
 		369ABF66220ED13900363286 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				36D988FD22142F1F00751C3E /* Models */,
 				369ABF68220ED15900363286 /* Shared */,
+				36D988FD22142F1F00751C3E /* Models */,
+				3651A67122266C5300185647 /* Views */,
 				369ABF65220ED11E00363286 /* Controllers */,
 			);
 			path = Sources;
@@ -275,6 +286,7 @@
 				369ABF64220ED0F600363286 /* LoginController.swift in Sources */,
 				36D64A2E2216C62700E353E3 /* LoginController+handlers.swift in Sources */,
 				369ABF50220E8E1D00363286 /* MessagesController.swift in Sources */,
+				3651A67322266C9B00185647 /* UserCell.swift in Sources */,
 				369ABF4E220E8E1D00363286 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

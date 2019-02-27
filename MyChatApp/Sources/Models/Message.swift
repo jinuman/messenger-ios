@@ -11,10 +11,10 @@ import Foundation
 class Message {
     var fromId: String?
     var text: String?
-    var timestamp: TimeInterval?
+    var timestamp: Date?
     var toId: String?
     
-    init(fromId: String, text: String, timestamp: TimeInterval, toId: String) {
+    init(fromId: String, text: String, timestamp: Date, toId: String) {
         self.fromId = fromId
         self.text = text
         self.timestamp = timestamp
@@ -27,11 +27,11 @@ extension Message {
         guard
             let fromId = dictionary["fromId"] as? String,
             let text = dictionary["text"] as? String,
-            let timestamp = dictionary["timestamp"] as? TimeInterval,
+            let timestamp = dictionary["timestamp"] as? Double,
             let toId = dictionary["toId"] as? String else {
                 return nil
         }
-        self.init(fromId: fromId, text: text, timestamp: timestamp, toId: toId)
+        self.init(fromId: fromId, text: text, timestamp: Date(timeIntervalSince1970: timestamp), toId: toId)
     }
 }
 

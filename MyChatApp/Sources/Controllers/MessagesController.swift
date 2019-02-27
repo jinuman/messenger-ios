@@ -28,7 +28,7 @@ class MessagesController: UITableViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: #imageLiteral(resourceName: "new_message_icon"), style: .plain,
                                                             target: self, action: #selector(handleNewMessage))
         
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellId)
+        tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
         checkIfUserIsLoggedIn()
         observeMessages()
 //        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showChatController))
@@ -80,16 +80,22 @@ class MessagesController: UITableViewController {
         present(loginController, animated: true, completion: nil)
     }
     
+    // MARK:- tableView methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messages.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
-        
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? UserCell else {
+            fatalError("Cell is not proper")
+        }
         let message = messages[indexPath.row]
-        cell.textLabel?.text = message.text
+        cell.message = message
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 96
     }
 
 }
