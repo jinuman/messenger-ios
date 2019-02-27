@@ -81,13 +81,6 @@ class MessagesController: UITableViewController {
         }
     }
     
-//    private func observeMessages() {
-//        let ref = Database.database().reference().child("messages")
-//        ref.observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
-//
-//        }
-//    }
-    
     @objc private func handleNewMessage() {
         let newMessageController = NewMessageController()
         newMessageController.delegate = self
@@ -124,6 +117,24 @@ class MessagesController: UITableViewController {
         return 96
     }
 
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let message = messages[indexPath.row]
+        guard let chatPartnerId = message.chatPartnerId() else {
+            return
+        }
+        let ref = Database.database().reference().child("users").child(chatPartnerId)
+        ref.observeSingleEvent(of: .value) { [weak self] (snapshot) in
+            guard
+                let self = self,
+                let dictionary = snapshot.value as? [String: Any],
+                let user = User(dictionary: dictionary) else {
+                    return
+            }
+            user.id = chatPartnerId
+            self.showChatController(for: user)
+        }
+    }
+    
 }
 
 
@@ -146,11 +157,12 @@ extension MessagesController: LoginControllerDelegate {
             self.messages.removeAll()
             self.messagesDictionary.removeAll()
             #warning("need to fix later on..Profile images doesn't show up properly..")
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-                self.observeUserMessages()  // 메세지들 불러오기!
-            }
-            
+//            DispatchQueue.main.async { [weak self] in
+//                self?.tableView.reloadData()
+//                self?.observeUserMessages()
+//            }
+            self.tableView.reloadData()
+            self.observeUserMessages() // 메세지들 불러오기!
 //            self.setupNavBarWithUser(user: user)
         }
     }
