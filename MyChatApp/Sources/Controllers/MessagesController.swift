@@ -17,6 +17,7 @@ protocol MessagesControllerDelegate: class {
 class MessagesController: UITableViewController {
     // MARK:- Properties
     var messages: [Message] = []
+    var messagesDictionary: [String: Message] = [:]
     let cellId = "MessagesCellId"
     
     // MARK:- View Life Cycle
@@ -51,10 +52,21 @@ class MessagesController: UITableViewController {
             guard
                 let self = self,
                 let dictionary = snapshot.value as? [String: Any],
-                let message = Message(dictionary: dictionary) else {
+                let message = Message(dictionary: dictionary),
+                let toId = message.toId else {
                     return
             }
-            self.messages.append(message)
+            self.messagesDictionary[toId] = message
+            self.messages = Array(self.messagesDictionary.values)
+            self.messages.sort(by: { (message1, message2) -> Bool in
+                if
+                    let time1 = message1.timestamp,
+                    let time2 = message2.timestamp {
+                    return time1 > time2
+                } else {
+                    return false
+                }
+            })
             
             DispatchQueue.main.async { [weak self] in
                 self?.tableView.reloadData()
