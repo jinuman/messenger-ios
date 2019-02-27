@@ -30,6 +30,47 @@ class UserCell: UITableViewCell {
         return label
     }()
     
+    // Handling message property
+    var message: Message? {
+        didSet {
+            setupNameAndProfileImage()
+            
+            guard let timestamp = message?.timestamp else {
+                return
+            }
+            detailTextLabel?.text = message?.text
+            let dateFormatter = DateFormatter()
+            dateFormatter.timeStyle = .short
+            timeLabel.text = dateFormatter.string(from: timestamp)
+        }
+    }
+    
+    private func setupNameAndProfileImage() {
+        let chatPartnerId: String?
+        
+        if message?.fromId == Auth.auth().currentUser?.uid {
+            chatPartnerId = message?.toId
+        } else {
+            chatPartnerId = message?.fromId
+        }
+        
+        guard let partnerId = chatPartnerId else {
+            return
+        }
+        
+        let ref = Database.database().reference().child("users").child(partnerId)
+        ref.observeSingleEvent(of: .value) { [weak self] (snapshot) in
+            guard
+                let self = self,
+                let dictionary = snapshot.value as? [String: Any],
+                let urlString = dictionary["profileImageUrl"] as? String else {
+                    return
+            }
+            self.textLabel?.text = dictionary["name"] as? String
+            self.profileImageView.loadImageUsingCache(with: urlString)
+        }
+    }
+    
     // You should use the same reuse identifier for all cells of the same form.
     // MARK:- Cell Initializer
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -67,29 +108,4 @@ class UserCell: UITableViewCell {
                                        width: detailTextLabel.frame.width, height: detailTextLabel.frame.height)
     }
     
-    // Handling message
-    var message: Message? {
-        didSet {
-            guard
-                let toId = message?.toId,
-                let timestamp = message?.timestamp else {
-                    return
-            }
-            let ref = Database.database().reference().child("users").child(toId)
-            ref.observeSingleEvent(of: .value) { [weak self] (snapshot) in
-                guard
-                    let self = self,
-                    let dictionary = snapshot.value as? [String: Any],
-                    let urlString = dictionary["profileImageUrl"] as? String else {
-                        return
-                }
-                self.textLabel?.text = dictionary["name"] as? String
-                self.profileImageView.loadImageUsingCache(with: urlString)
-            }
-            detailTextLabel?.text = message?.text
-            let dateFormatter = DateFormatter()
-            dateFormatter.timeStyle = .short
-            timeLabel.text = dateFormatter.string(from: timestamp)
-        }
-    }
 }

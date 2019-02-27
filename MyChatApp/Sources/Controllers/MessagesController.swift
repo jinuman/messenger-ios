@@ -31,7 +31,7 @@ class MessagesController: UITableViewController {
         
         tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
         checkIfUserIsLoggedIn()
-        observeMessages()
+        
 //        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showChatController))
 //        self.navigationController?.navigationBar.addGestureRecognizer(tapGesture)
     }
@@ -46,33 +46,47 @@ class MessagesController: UITableViewController {
         }
     }
     
-    private func observeMessages() {
-        let ref = Database.database().reference().child("messages")
+    private func observeUserMessages() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user-messages").child(uid)
         ref.observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
-            guard
-                let self = self,
-                let dictionary = snapshot.value as? [String: Any],
-                let message = Message(dictionary: dictionary),
-                let toId = message.toId else {
-                    return
-            }
-            self.messagesDictionary[toId] = message
-            self.messages = Array(self.messagesDictionary.values)
-            self.messages.sort(by: { (message1, message2) -> Bool in
-                if
-                    let time1 = message1.timestamp,
-                    let time2 = message2.timestamp {
-                    return time1 > time2
-                } else {
-                    return false
+            let messageId = snapshot.key
+            let messagesReference = Database.database().reference().child("messages").child(messageId)
+            messagesReference.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
+                guard
+                    let self = self,
+                    let dictionary = snapshot.value as? [String: Any],
+                    let message = Message(dictionary: dictionary),
+                    let toId = message.toId else {
+                        return
+                }
+                self.messagesDictionary[toId] = message
+                self.messages = Array(self.messagesDictionary.values)
+                self.messages.sort(by: { (message1, message2) -> Bool in
+                    if
+                        let time1 = message1.timestamp,
+                        let time2 = message2.timestamp {
+                        return time1 > time2
+                    } else {
+                        return false
+                    }
+                })
+                
+                DispatchQueue.main.async { [weak self] in
+                    self?.tableView.reloadData()
                 }
             })
-            
-            DispatchQueue.main.async { [weak self] in
-                self?.tableView.reloadData()
-            }
         }
     }
+    
+//    private func observeMessages() {
+//        let ref = Database.database().reference().child("messages")
+//        ref.observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
+//
+//        }
+//    }
     
     @objc private func handleNewMessage() {
         let newMessageController = NewMessageController()
@@ -128,6 +142,15 @@ extension MessagesController: LoginControllerDelegate {
                     return
             }
             self.navigationItem.title = dictionary["name"] as? String
+            
+            self.messages.removeAll()
+            self.messagesDictionary.removeAll()
+            #warning("need to fix later on..Profile images doesn't show up properly..")
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+                self.observeUserMessages()  // 메세지들 불러오기!
+            }
+            
 //            self.setupNavBarWithUser(user: user)
         }
     }

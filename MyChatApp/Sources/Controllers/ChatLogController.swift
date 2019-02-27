@@ -79,8 +79,8 @@ class ChatLogController: UICollectionViewController {
     }
     
     @objc private func handleSend() {
-        let ref: DatabaseReference = Database.database().reference()
-        let messagesRef = ref.child("messages").childByAutoId()
+        let reference: DatabaseReference = Database.database().reference()
+        let messagesRef = reference.child("messages").childByAutoId()
         guard
             let text = inputTextField.text,
             let toId = user?.id,
@@ -88,8 +88,23 @@ class ChatLogController: UICollectionViewController {
                 return
         }
         let timestamp = Date().timeIntervalSince1970
-        let values = ["fromId": fromId, "text": text, "timestamp": timestamp, "toId": toId] as [String : Any]
-        messagesRef.updateChildValues(values)
+        let values = [ "fromId": fromId,
+                       "text": text,
+                       "timestamp": timestamp,
+                       "toId": toId ] as [String : Any]
+//        messagesRef.updateChildValues(values)
+        messagesRef.updateChildValues(values) { (error, ref) in
+            if let error = error {
+                print("@@ messagesRef \(error.localizedDescription)")
+            }
+            let userMessagesRef = reference.child("user-messages").child(fromId)
+            guard let messageId = messagesRef.key else {
+                return
+            }
+            userMessagesRef.updateChildValues([messageId: 1])
+            let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId)
+            recipientUserMessagesRef.updateChildValues([messageId: 1])
+        }
     }
 }
 
