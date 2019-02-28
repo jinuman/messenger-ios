@@ -31,5 +31,5 @@ extension User {
         }
         self.init(name: name, email: email, profileImageUrl: profileImageUrl)
     }
-}
+} 
 

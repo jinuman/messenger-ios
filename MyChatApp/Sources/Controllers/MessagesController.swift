@@ -17,6 +17,7 @@ protocol MessagesControllerDelegate: class {
 class MessagesController: UITableViewController {
     // MARK:- Properties
     var messages: [Message] = []
+    var messagesDictionary: [String: Message] = [:]
     let cellId = "MessagesCellId"
     
     // MARK:- View Life Cycle
@@ -28,9 +29,9 @@ class MessagesController: UITableViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: #imageLiteral(resourceName: "new_message_icon"), style: .plain,
                                                             target: self, action: #selector(handleNewMessage))
         
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellId)
+        tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
         checkIfUserIsLoggedIn()
-        observeMessages()
+        
 //        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showChatController))
 //        self.navigationController?.navigationBar.addGestureRecognizer(tapGesture)
     }
@@ -45,20 +46,38 @@ class MessagesController: UITableViewController {
         }
     }
     
-    private func observeMessages() {
-        let ref = Database.database().reference().child("messages")
+    private func observeUserMessages() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user-messages").child(uid)
         ref.observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
-            guard
-                let self = self,
-                let dictionary = snapshot.value as? [String: Any],
-                let message = Message(dictionary: dictionary) else {
-                    return
-            }
-            self.messages.append(message)
-            
-            DispatchQueue.main.async { [weak self] in
-                self?.tableView.reloadData()
-            }
+            let messageId = snapshot.key
+            let messagesReference = Database.database().reference().child("messages").child(messageId)
+            messagesReference.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
+                guard
+                    let self = self,
+                    let dictionary = snapshot.value as? [String: Any],
+                    let message = Message(dictionary: dictionary),
+                    let toId = message.toId else {
+                        return
+                }
+                self.messagesDictionary[toId] = message
+                self.messages = Array(self.messagesDictionary.values)
+                self.messages.sort(by: { (message1, message2) -> Bool in
+                    if
+                        let time1 = message1.timestamp,
+                        let time2 = message2.timestamp {
+                        return time1 > time2
+                    } else {
+                        return false
+                    }
+                })
+                
+                DispatchQueue.main.async { [weak self] in
+                    self?.tableView.reloadData()
+                }
+            })
         }
     }
     
@@ -80,18 +99,42 @@ class MessagesController: UITableViewController {
         present(loginController, animated: true, completion: nil)
     }
     
+    // MARK:- tableView methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messages.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
-        
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? UserCell else {
+            fatalError("Cell is not proper")
+        }
         let message = messages[indexPath.row]
-        cell.textLabel?.text = message.text
+        cell.message = message
         return cell
     }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 96
+    }
 
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let message = messages[indexPath.row]
+        guard let chatPartnerId = message.chatPartnerId() else {
+            return
+        }
+        let ref = Database.database().reference().child("users").child(chatPartnerId)
+        ref.observeSingleEvent(of: .value) { [weak self] (snapshot) in
+            guard
+                let self = self,
+                let dictionary = snapshot.value as? [String: Any],
+                let user = User(dictionary: dictionary) else {
+                    return
+            }
+            user.id = chatPartnerId
+            self.showChatController(for: user)
+        }
+    }
+    
 }
 
 
@@ -110,6 +153,16 @@ extension MessagesController: LoginControllerDelegate {
                     return
             }
             self.navigationItem.title = dictionary["name"] as? String
+            
+            self.messages.removeAll()
+            self.messagesDictionary.removeAll()
+            #warning("need to fix later on..Profile images doesn't show up properly..")
+//            DispatchQueue.main.async { [weak self] in
+//                self?.tableView.reloadData()
+//                self?.observeUserMessages()
+//            }
+            self.tableView.reloadData()
+            self.observeUserMessages() // 메세지들 불러오기!
 //            self.setupNavBarWithUser(user: user)
         }
     }

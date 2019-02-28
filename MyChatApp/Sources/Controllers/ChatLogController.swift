@@ -11,12 +11,42 @@ import Firebase
 
 class ChatLogController: UICollectionViewController {
     
+    let cellId = "ChatLogCellId"
+    
     var user: User? {
         didSet {
             guard let user = user else {
                 return
             }
             navigationItem.title = user.name
+            
+            observeMessages()
+        }
+    }
+    
+    var messages: [Message] = []
+    
+    func observeMessages() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let userMessagesRef = Database.database().reference().child("user-messages").child(uid)
+        userMessagesRef.observe(.childAdded) { (snapshot) in
+            
+            let messageId = snapshot.key
+            let messagesRef = Database.database().reference().child("messages").child(messageId)
+            messagesRef.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
+                guard
+                    let self = self,
+                    let dictionary = snapshot.value as? [String: Any],
+                    let message = Message(dictionary: dictionary) else {
+                        return
+                }
+                DispatchQueue.main.async { [weak self] in
+                    self?.collectionView.reloadData()
+                }
+                self.messages.append(message)
+            })
         }
     }
     
@@ -31,13 +61,27 @@ class ChatLogController: UICollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.backgroundColor = .white
-        
+        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: cellId)
         setupInputComponents()
+    }
+    
+    // MARK:- Regarding collectionView methods
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return messages.count
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
+        
+        cell.backgroundColor = .blue
+        
+        return cell
     }
     
     func setupInputComponents() {
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.backgroundColor = .white
         
         view.addSubview(containerView)
         // need x, y, w, h
@@ -79,8 +123,8 @@ class ChatLogController: UICollectionViewController {
     }
     
     @objc private func handleSend() {
-        let ref: DatabaseReference = Database.database().reference()
-        let messagesRef = ref.child("messages").childByAutoId()
+        let reference: DatabaseReference = Database.database().reference()
+        let messagesRef = reference.child("messages").childByAutoId()
         guard
             let text = inputTextField.text,
             let toId = user?.id,
@@ -88,8 +132,29 @@ class ChatLogController: UICollectionViewController {
                 return
         }
         let timestamp = Date().timeIntervalSince1970
-        let values = ["fromId": fromId, "text": text, "timestamp": timestamp, "toId": toId] as [String : Any]
-        messagesRef.updateChildValues(values)
+        let values = [ "fromId": fromId,
+                       "text": text,
+                       "timestamp": timestamp,
+                       "toId": toId ] as [String : Any]
+//        messagesRef.updateChildValues(values)
+        messagesRef.updateChildValues(values) { (error, ref) in
+            if let error = error {
+                print("@@ messagesRef \(error.localizedDescription)")
+            }
+            let userMessagesRef = reference.child("user-messages").child(fromId)
+            guard let messageId = messagesRef.key else {
+                return
+            }
+            userMessagesRef.updateChildValues([messageId: 1])
+            let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId)
+            recipientUserMessagesRef.updateChildValues([messageId: 1])
+        }
+    }
+}
+
+extension ChatLogController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: view.frame.height, height: 80)
     }
 }
 

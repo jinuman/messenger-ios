@@ -19,7 +19,7 @@ class NewMessageController: UITableViewController {
     weak var delegate: NewMessageControllerDelegate?
     
     // MARK:- Properties
-    private let cellId = "userCell"
+    private let cellId = "NewMessageCellId"
     private var users = [User]()
     
     // MARK:- View Life Cycle
@@ -65,16 +65,16 @@ class NewMessageController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? UserCell else {
-            fatalError("User cell is not valid")
+            fatalError("User cell is not proper")
         }
         let user = users[indexPath.row]
         cell.textLabel?.text = user.name
         cell.detailTextLabel?.text = user.email
         
-        if let profileImageUrl = user.profileImageUrl {
-            // better way using cache
-            cell.profileImageView.loadImageUsingCacheWithUrlString(profileImageUrl)
+        guard let urlString = user.profileImageUrl else {
+            fatalError("url string is not proper..")
         }
+        cell.profileImageView.loadImageUsingCache(with: urlString)
         return cell
     }
     
@@ -92,53 +92,4 @@ class NewMessageController: UITableViewController {
         }
     }
     
-}
-
-// MARK:- Inside NewMessageController table view
-class UserCell: UITableViewCell {
-    // MARK:- User Cell properties
-    let profileImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.layer.cornerRadius = 24
-        imageView.layer.masksToBounds = true
-        imageView.layer.borderWidth = 0.0
-        imageView.contentMode = .scaleAspectFill
-        return imageView
-    }()
-    
-    // You should use the same reuse identifier for all cells of the same form.
-    // MARK:- Cell Initializer
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
-        
-        addSubview(profileImageView)
-        setupProfileImageViewInCell()
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    // MARK:- Setting up cell properties
-    private func setupProfileImageViewInCell() {
-        // need x, y, width, height
-        profileImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
-        profileImageView.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 48).isActive = true
-        profileImageView.heightAnchor.constraint(equalToConstant: 48).isActive = true
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        guard
-            let textLabel = textLabel,
-            let detailTextLabel = detailTextLabel else {
-                return
-        }
-        textLabel.frame = CGRect(x: 64, y: textLabel.frame.origin.y - 2,
-                                 width: textLabel.frame.width, height: textLabel.frame.height)
-        detailTextLabel.frame = CGRect(x: 64, y: detailTextLabel.frame.origin.y + 2,
-                                       width: detailTextLabel.frame.width, height: detailTextLabel.frame.height)
-    }
 }
