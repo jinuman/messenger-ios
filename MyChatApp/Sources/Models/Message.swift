@@ -15,7 +15,7 @@ class Message {
     var timestamp: Date?
     var toId: String?
     
-    init(fromId: String, text: String, timestamp: Date, toId: String) {
+    init(fromId: String = "", text: String = "", timestamp: Date = Date(), toId: String = "") {
         self.fromId = fromId
         self.text = text
         self.timestamp = timestamp

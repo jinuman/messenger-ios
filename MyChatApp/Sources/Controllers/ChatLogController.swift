@@ -19,6 +19,34 @@ class ChatLogController: UICollectionViewController {
                 return
             }
             navigationItem.title = user.name
+            
+            observeMessages()
+        }
+    }
+    
+    var messages: [Message] = []
+    
+    func observeMessages() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let userMessagesRef = Database.database().reference().child("user-messages").child(uid)
+        userMessagesRef.observe(.childAdded) { (snapshot) in
+            
+            let messageId = snapshot.key
+            let messagesRef = Database.database().reference().child("messages").child(messageId)
+            messagesRef.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
+                guard
+                    let self = self,
+                    let dictionary = snapshot.value as? [String: Any],
+                    let message = Message(dictionary: dictionary) else {
+                        return
+                }
+                DispatchQueue.main.async { [weak self] in
+                    self?.collectionView.reloadData()
+                }
+                self.messages.append(message)
+            })
         }
     }
     
@@ -37,12 +65,15 @@ class ChatLogController: UICollectionViewController {
         setupInputComponents()
     }
     
+    // MARK:- Regarding collectionView methods
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
+        return messages.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
+        
+        cell.backgroundColor = .blue
         
         return cell
     }
@@ -50,6 +81,7 @@ class ChatLogController: UICollectionViewController {
     func setupInputComponents() {
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.backgroundColor = .white
         
         view.addSubview(containerView)
         // need x, y, w, h
@@ -117,6 +149,12 @@ class ChatLogController: UICollectionViewController {
             let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId)
             recipientUserMessagesRef.updateChildValues([messageId: 1])
         }
+    }
+}
+
+extension ChatLogController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: view.frame.height, height: 80)
     }
 }
 
