@@ -19,6 +19,7 @@ class MessagesController: UITableViewController {
     var messages: [Message] = []
     var messagesDictionary: [String: Message] = [:]
     let cellId = "MessagesCellId"
+    fileprivate var timer: Timer?
     
     // MARK:- View Life Cycle
     override func viewDidLoad() {
@@ -59,10 +60,10 @@ class MessagesController: UITableViewController {
                     let self = self,
                     let dictionary = snapshot.value as? [String: Any],
                     let message = Message(dictionary: dictionary),
-                    let toId = message.toId else {
+                    let chatPartnerId = message.chatPartnerId() else {
                         return
                 }
-                self.messagesDictionary[toId] = message
+                self.messagesDictionary[chatPartnerId] = message
                 self.messages = Array(self.messagesDictionary.values)
                 self.messages.sort(by: { (message1, message2) -> Bool in
                     if
@@ -73,10 +74,23 @@ class MessagesController: UITableViewController {
                         return false
                     }
                 })
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.tableView.reloadData()
-                }
+                // To fix bug: too much relaoding table into just reload table once.
+                // Continuously cancel timer..and setup a new timer
+                // Finally, no longer cancel the timer. -> Because timer is working with main thread run loop..? Almost right
+                // So it fires block after 0.1 sec
+                self.timer?.invalidate()
+//                print("canceled timer just before.")
+                self.timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false, block: { [weak self] (timer: Timer) in
+                    guard let self = self else {
+                        return
+                    }
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                        print("!! table view reloaded after 0.1 seconds")
+                    }
+                    
+                })
+//                print("Getting messages?")
             })
         }
     }
@@ -114,7 +128,7 @@ class MessagesController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 96
+        return 84
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -156,13 +170,9 @@ extension MessagesController: LoginControllerDelegate {
             
             self.messages.removeAll()
             self.messagesDictionary.removeAll()
-            #warning("need to fix later on..Profile images doesn't show up properly..")
-//            DispatchQueue.main.async { [weak self] in
-//                self?.tableView.reloadData()
-//                self?.observeUserMessages()
-//            }
+            
             self.tableView.reloadData()
-            self.observeUserMessages() // 메세지들 불러오기!
+            self.observeUserMessages() // 메세지들 불러오기
 //            self.setupNavBarWithUser(user: user)
         }
     }
