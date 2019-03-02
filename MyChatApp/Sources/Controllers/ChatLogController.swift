@@ -86,11 +86,25 @@ class ChatLogController: UICollectionViewController {
         let message = messages[indexPath.item]
         cell.textView.text = message.text
         
+       setupCell(cell: cell, message: message)
+        
         if let text = message.text {
             cell.bubbleWidthAnchor?.constant = estimatedFrame(for: text).width + 32
         }
         
         return cell
+    }
+    
+    func setupCell(cell: ChatMessageCell, message: Message) {
+        if message.fromId == Auth.auth().currentUser?.uid {
+            // outgoing blue bubble
+            cell.bubbleView.backgroundColor = ChatMessageCell.bubbleBlue
+            cell.textView.textColor = .white
+        } else {
+            // incoming lightGray bubble
+            cell.bubbleView.backgroundColor = UIColor(r: 240, g: 240, b: 240)
+            cell.textView.textColor = .black
+        }
     }
     
     func setupInputComponents() {
