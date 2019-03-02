@@ -40,6 +40,7 @@ class ChatMessageCell: UICollectionViewCell {
         tv.backgroundColor = .clear
         tv.textColor = .white
         tv.font = UIFont.systemFont(ofSize: 16)
+        tv.isUserInteractionEnabled = false
         return tv
     }()
     

@@ -11,8 +11,9 @@ import Firebase
 
 class ChatLogController: UICollectionViewController {
     
+    // MARK:- Properties for controller
     let cellId = "ChatLogCellId"
-    
+    // 사용자의 채팅 대상
     var user: User? {
         didSet {
             guard let user = user else {
@@ -22,14 +23,60 @@ class ChatLogController: UICollectionViewController {
             observeMessages()
         }
     }
-    
+    // 사용자 - 대상 간의 채팅 메세지들
     var messages: [Message] = []
     
+    var containerViewBottomAnchor: NSLayoutConstraint?
+    
+    lazy var inputTextField: UITextField = {
+        let tf = UITextField()
+        tf.translatesAutoresizingMaskIntoConstraints = false
+        tf.placeholder = "Enter message..."
+        tf.delegate = self
+        return tf
+    }()
+    
+    // MARK:- View controller methods
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        collectionView.backgroundColor = .white
+        
+        collectionView.alwaysBounceVertical = true  // Draggable..
+        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
+        collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
+        collectionView.register(ChatMessageCell.self, forCellWithReuseIdentifier: cellId)
+        setupInputComponents()
+        
+        let nc = NotificationCenter.default
+        nc.addObserver(self,
+                       selector: #selector(handleKeyboardAppear(_:)),
+                       name: UIResponder.keyboardWillShowNotification,
+                       object: nil)
+        nc.addObserver(self,
+                       selector: #selector(handleKeyboardAppear(_:)),
+                       name: UIResponder.keyboardWillHideNotification,
+                       object: nil)
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        collectionView.collectionViewLayout.invalidateLayout()
+    }
+    
+    // In order to fix Notification memory leak.
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // MARK:- Methods
     func observeMessages() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
+        guard
+            let uid = Auth.auth().currentUser?.uid,
+            let selectedId = user?.id else {
+                return
         }
-        let userMessagesRef = Database.database().reference().child("user-messages").child(uid)
+        let userMessagesRef = Database.database().reference().child("user-messages").child(uid).child(selectedId)
         userMessagesRef.observe(.childAdded) { (snapshot) in
             
             let messageId = snapshot.key
@@ -41,37 +88,69 @@ class ChatLogController: UICollectionViewController {
                     let message = Message(dictionary: dictionary) else {
                         return
                 }
-                
-                if message.chatPartnerId() == self.user?.id {
-                    self.messages.append(message)
-                    DispatchQueue.main.async { [weak self] in
-                        self?.collectionView.reloadData()
-                    }
+//                 #warning("need to optimize ..") // -- > Success!
+//                print(" ## \(message.text)")
+                self.messages.append(message)
+                DispatchQueue.main.async { [weak self] in
+                    self?.collectionView.reloadData()
                 }
             })
         }
     }
     
-    lazy var inputTextField: UITextField = {
-        let tf = UITextField()
-        tf.translatesAutoresizingMaskIntoConstraints = false
-        tf.placeholder = "Enter message..."
-        tf.delegate = self
-        return tf
-    }()
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        collectionView.backgroundColor = .white
-        collectionView.alwaysBounceVertical = true  // Draggable..
-        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
-        collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
-        collectionView.register(ChatMessageCell.self, forCellWithReuseIdentifier: cellId)
-        setupInputComponents()
+    @objc private func handleSend() {
+        let reference: DatabaseReference = Database.database().reference()
+        let messagesRef = reference.child("messages").childByAutoId()
+        guard
+            let text = inputTextField.text,
+            let toId = user?.id,
+            let fromId = Auth.auth().currentUser?.uid else {
+                return
+        }
+        let timestamp = Date().timeIntervalSince1970
+        let values = [ "fromId": fromId,
+                       "text": text,
+                       "timestamp": timestamp,
+                       "toId": toId ] as [String : Any]
+        
+        messagesRef.updateChildValues(values) { [weak self] (error, ref) in
+            if let error = error {
+                print("@@ messagesRef \(error.localizedDescription)")
+            }
+            self?.inputTextField.text = nil
+            guard let messageId = messagesRef.key else {
+                return
+            }
+            let userMessagesRef = reference.child("user-messages").child(fromId).child(toId)
+            userMessagesRef.updateChildValues([messageId: 1])
+            
+            // Counter part
+            let recipientUserMessagesRef = reference.child("user-messages").child(toId).child(fromId)
+            recipientUserMessagesRef.updateChildValues([messageId: 1])
+            self?.inputTextField.resignFirstResponder()
+        }
     }
-    
-    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        collectionView.collectionViewLayout.invalidateLayout()
+
+    @objc func handleKeyboardAppear(_ notification: Notification) {
+        guard
+            let userInfo = notification.userInfo,
+            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
+            let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval,
+            let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else {
+                return
+        }
+        let isKeyboardWillShow: Bool = notification.name == UIResponder.keyboardWillShowNotification
+        let safeAreaBottomHeight = view.safeAreaInsets.bottom
+        let keyboardHeight = isKeyboardWillShow ? keyboardFrame.cgRectValue.height - safeAreaBottomHeight : 0
+        let animationOption = UIView.AnimationOptions.init(rawValue: curve)
+        
+        UIView.animate(withDuration: duration,
+                       delay: 0.0,
+                       options: animationOption,
+                       animations: {
+                        self.containerViewBottomAnchor?.constant = -keyboardHeight
+                        self.view.layoutIfNeeded()
+        }, completion: nil)
     }
     
     // MARK:- Regarding collectionView methods
@@ -118,6 +197,7 @@ class ChatLogController: UICollectionViewController {
         }
     }
     
+    // MARK:- Setting up layouts methods
     func setupInputComponents() {
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
@@ -126,7 +206,9 @@ class ChatLogController: UICollectionViewController {
         view.addSubview(containerView)
         // need x, y, w, h
         containerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
-        containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        containerViewBottomAnchor?.isActive = true
+        
         containerView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
         containerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
@@ -161,36 +243,6 @@ class ChatLogController: UICollectionViewController {
         separatorLineView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
         separatorLineView.heightAnchor.constraint(equalToConstant: 1).isActive = true
     }
-    
-    @objc private func handleSend() {
-        let reference: DatabaseReference = Database.database().reference()
-        let messagesRef = reference.child("messages").childByAutoId()
-        guard
-            let text = inputTextField.text,
-            let toId = user?.id,
-            let fromId = Auth.auth().currentUser?.uid else {
-                return
-        }
-        let timestamp = Date().timeIntervalSince1970
-        let values = [ "fromId": fromId,
-                       "text": text,
-                       "timestamp": timestamp,
-                       "toId": toId ] as [String : Any]
-//        messagesRef.updateChildValues(values)
-        messagesRef.updateChildValues(values) { [weak self] (error, ref) in
-            if let error = error {
-                print("@@ messagesRef \(error.localizedDescription)")
-            }
-            self?.inputTextField.text = nil
-            let userMessagesRef = reference.child("user-messages").child(fromId)
-            guard let messageId = messagesRef.key else {
-                return
-            }
-            userMessagesRef.updateChildValues([messageId: 1])
-            let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId)
-            recipientUserMessagesRef.updateChildValues([messageId: 1])
-        }
-    }
 }
 
 extension ChatLogController: UICollectionViewDelegateFlowLayout {
@@ -199,8 +251,8 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         if let text = messages[indexPath.item].text {
             height = estimatedFrame(for: text).height + 20
         }
-        
-        return CGSize(width: view.frame.width, height: height)
+        let width = UIScreen.main.bounds.width - view.safeAreaInsets.left - view.safeAreaInsets.right
+        return CGSize(width: width, height: height)
     }
     
     private func estimatedFrame(for text: String) -> CGRect {
@@ -214,6 +266,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
 
 extension ChatLogController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        self.view.endEditing(true)
         handleSend()
         return true
     }
