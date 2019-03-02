@@ -12,6 +12,15 @@ class ChatMessageCell: UICollectionViewCell {
     
     static let bubbleBlue = UIColor(r: 0, g: 137, b: 249)
     
+    let profileImageView: UIImageView = {
+        let imgView = UIImageView()
+        imgView.translatesAutoresizingMaskIntoConstraints = false
+        imgView.layer.cornerRadius = 16
+        imgView.layer.masksToBounds = true
+        imgView.contentMode = .scaleAspectFill
+        return imgView
+    }()
+    
     let bubbleView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -22,6 +31,8 @@ class ChatMessageCell: UICollectionViewCell {
     }()
     
     var bubbleWidthAnchor: NSLayoutConstraint?
+    var bubbleTrailingAnchor: NSLayoutConstraint?
+    var bubbleLeadingAnchor: NSLayoutConstraint?
     
     let textView: UITextView = {
         let tv = UITextView()
@@ -34,11 +45,21 @@ class ChatMessageCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        addSubview(profileImageView)
         addSubview(bubbleView)
         addSubview(textView)
         
         // need x, y, w, h
-        bubbleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8).isActive = true
+        profileImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
+        profileImageView.centerYAnchor.constraint(equalTo: bubbleView.centerYAnchor).isActive = true
+        profileImageView.widthAnchor.constraint(equalToConstant: 32).isActive = true
+        profileImageView.heightAnchor.constraint(equalTo: profileImageView.widthAnchor).isActive = true
+        
+        // need x, y, w, h
+        // set this Anchor inside ChatLogController
+        bubbleTrailingAnchor = bubbleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8)
+        bubbleLeadingAnchor = bubbleView.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8)
+        
         bubbleView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
         bubbleWidthAnchor = bubbleView.widthAnchor.constraint(equalToConstant: 200)
         bubbleWidthAnchor?.isActive = true

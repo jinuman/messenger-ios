@@ -96,14 +96,25 @@ class ChatLogController: UICollectionViewController {
     }
     
     func setupCell(cell: ChatMessageCell, message: Message) {
+        guard let profileImageUrl = self.user?.profileImageUrl else {
+            return
+        }
+        cell.profileImageView.loadImageUsingCache(with: profileImageUrl)
+        
         if message.fromId == Auth.auth().currentUser?.uid {
             // outgoing blue bubble
             cell.bubbleView.backgroundColor = ChatMessageCell.bubbleBlue
             cell.textView.textColor = .white
+            cell.profileImageView.isHidden = true
+            cell.bubbleTrailingAnchor?.isActive = true
+            cell.bubbleLeadingAnchor?.isActive = false
         } else {
             // incoming lightGray bubble
             cell.bubbleView.backgroundColor = UIColor(r: 240, g: 240, b: 240)
             cell.textView.textColor = .black
+            cell.profileImageView.isHidden = false
+            cell.bubbleTrailingAnchor?.isActive = false
+            cell.bubbleLeadingAnchor?.isActive = true
         }
     }
     
