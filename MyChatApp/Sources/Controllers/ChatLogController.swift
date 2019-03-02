@@ -82,6 +82,12 @@ class ChatLogController: UICollectionViewController {
                        object: nil)
     }
     
+    // In order to fix Notification memory leak.
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     @objc func handleKeyboardAppear(_ notification: Notification) {
         guard
             let userInfo = notification.userInfo,
