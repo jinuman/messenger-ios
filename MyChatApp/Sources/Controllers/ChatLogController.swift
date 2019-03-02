@@ -52,6 +52,8 @@ class ChatLogController: UICollectionViewController {
         }
     }
     
+    var containerViewBottomAnchor: NSLayoutConstraint?
+    
     lazy var inputTextField: UITextField = {
         let tf = UITextField()
         tf.translatesAutoresizingMaskIntoConstraints = false
@@ -68,6 +70,38 @@ class ChatLogController: UICollectionViewController {
         collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         collectionView.register(ChatMessageCell.self, forCellWithReuseIdentifier: cellId)
         setupInputComponents()
+        
+        let nc = NotificationCenter.default
+        nc.addObserver(self,
+                       selector: #selector(handleKeyboardAppear(_:)),
+                       name: UIResponder.keyboardWillShowNotification,
+                       object: nil)
+        nc.addObserver(self,
+                       selector: #selector(handleKeyboardAppear(_:)),
+                       name: UIResponder.keyboardWillHideNotification,
+                       object: nil)
+    }
+    
+    @objc func handleKeyboardAppear(_ notification: Notification) {
+        guard
+            let userInfo = notification.userInfo,
+            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
+            let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval,
+            let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else {
+                return
+        }
+        let isKeyboardWillShow: Bool = notification.name == UIResponder.keyboardWillShowNotification
+        let safeAreaBottomHeight = view.safeAreaInsets.bottom
+        let keyboardHeight = isKeyboardWillShow ? keyboardFrame.cgRectValue.height - safeAreaBottomHeight : 0
+        let animationOption = UIView.AnimationOptions.init(rawValue: curve)
+        
+        UIView.animate(withDuration: duration,
+                       delay: 0.0,
+                       options: animationOption,
+                       animations: {
+                        self.containerViewBottomAnchor?.constant = -keyboardHeight
+                        self.view.layoutIfNeeded()
+        }, completion: nil)
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -126,7 +160,9 @@ class ChatLogController: UICollectionViewController {
         view.addSubview(containerView)
         // need x, y, w, h
         containerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
-        containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        containerViewBottomAnchor?.isActive = true
+        
         containerView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
         containerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
