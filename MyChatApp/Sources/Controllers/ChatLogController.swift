@@ -65,12 +65,8 @@ class ChatLogController: UICollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Add Gesture
-        let tapGesture = UITapGestureRecognizer()
-        tapGesture.delegate = self
-        view.addGestureRecognizer(tapGesture)
-        
         collectionView.backgroundColor = .white
+        
         collectionView.alwaysBounceVertical = true  // Draggable..
         collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
         collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
@@ -237,8 +233,8 @@ class ChatLogController: UICollectionViewController {
             userMessagesRef.updateChildValues([messageId: 1])
             let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId)
             recipientUserMessagesRef.updateChildValues([messageId: 1])
+            self?.inputTextField.resignFirstResponder()
         }
-        self.inputTextField.resignFirstResponder()
     }
 }
 
@@ -265,13 +261,6 @@ extension ChatLogController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
         handleSend()
-        return true
-    }
-}
-
-extension ChatLogController: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        self.view.endEditing(true)
         return true
     }
 }
