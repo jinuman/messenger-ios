@@ -19,7 +19,6 @@ class ChatLogController: UICollectionViewController {
                 return
             }
             navigationItem.title = user.name
-            
             observeMessages()
         }
     }
@@ -42,10 +41,13 @@ class ChatLogController: UICollectionViewController {
                     let message = Message(dictionary: dictionary) else {
                         return
                 }
-                DispatchQueue.main.async { [weak self] in
-                    self?.collectionView.reloadData()
+                
+                if message.chatPartnerId() == self.user?.id {
+                    self.messages.append(message)
+                    DispatchQueue.main.async { [weak self] in
+                        self?.collectionView.reloadData()
+                    }
                 }
-                self.messages.append(message)
             })
         }
     }
@@ -61,8 +63,15 @@ class ChatLogController: UICollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.backgroundColor = .white
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: cellId)
+        collectionView.alwaysBounceVertical = true  // Draggable..
+        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
+        collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
+        collectionView.register(ChatMessageCell.self, forCellWithReuseIdentifier: cellId)
         setupInputComponents()
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        collectionView.collectionViewLayout.invalidateLayout()
     }
     
     // MARK:- Regarding collectionView methods
@@ -71,9 +80,15 @@ class ChatLogController: UICollectionViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as? ChatMessageCell else {
+            fatalError("ChatMessageCell is not proper..")
+        }
+        let message = messages[indexPath.item]
+        cell.textView.text = message.text
         
-        cell.backgroundColor = .blue
+        if let text = message.text {
+            cell.bubbleWidthAnchor?.constant = estimatedFrame(for: text).width + 32
+        }
         
         return cell
     }
@@ -137,10 +152,11 @@ class ChatLogController: UICollectionViewController {
                        "timestamp": timestamp,
                        "toId": toId ] as [String : Any]
 //        messagesRef.updateChildValues(values)
-        messagesRef.updateChildValues(values) { (error, ref) in
+        messagesRef.updateChildValues(values) { [weak self] (error, ref) in
             if let error = error {
                 print("@@ messagesRef \(error.localizedDescription)")
             }
+            self?.inputTextField.text = nil
             let userMessagesRef = reference.child("user-messages").child(fromId)
             guard let messageId = messagesRef.key else {
                 return
@@ -154,7 +170,20 @@ class ChatLogController: UICollectionViewController {
 
 extension ChatLogController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.height, height: 80)
+        var height: CGFloat = 80
+        if let text = messages[indexPath.item].text {
+            height = estimatedFrame(for: text).height + 20
+        }
+        
+        return CGSize(width: view.frame.width, height: height)
+    }
+    
+    private func estimatedFrame(for text: String) -> CGRect {
+        let size = CGSize(width: 200, height: 1000)
+        return NSString(string: text).boundingRect(with: size,
+                                                   options: .usesLineFragmentOrigin,
+                                                   attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)],
+                                                   context: nil)
     }
 }
 

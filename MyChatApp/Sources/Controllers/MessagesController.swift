@@ -59,10 +59,10 @@ class MessagesController: UITableViewController {
                     let self = self,
                     let dictionary = snapshot.value as? [String: Any],
                     let message = Message(dictionary: dictionary),
-                    let toId = message.toId else {
+                    let chatPartnerId = message.chatPartnerId() else {
                         return
                 }
-                self.messagesDictionary[toId] = message
+                self.messagesDictionary[chatPartnerId] = message
                 self.messages = Array(self.messagesDictionary.values)
                 self.messages.sort(by: { (message1, message2) -> Bool in
                     if
@@ -114,7 +114,7 @@ class MessagesController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 96
+        return 84
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
