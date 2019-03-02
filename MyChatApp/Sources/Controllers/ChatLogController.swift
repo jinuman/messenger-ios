@@ -11,8 +11,9 @@ import Firebase
 
 class ChatLogController: UICollectionViewController {
     
+    // MARK:- Properties for controller
     let cellId = "ChatLogCellId"
-    
+    // 사용자의 채팅 대상
     var user: User? {
         didSet {
             guard let user = user else {
@@ -22,35 +23,8 @@ class ChatLogController: UICollectionViewController {
             observeMessages()
         }
     }
-    
+    // 사용자 - 대상 간의 채팅 메세지들
     var messages: [Message] = []
-    
-    func observeMessages() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        let userMessagesRef = Database.database().reference().child("user-messages").child(uid)
-        userMessagesRef.observe(.childAdded) { (snapshot) in
-            
-            let messageId = snapshot.key
-            let messagesRef = Database.database().reference().child("messages").child(messageId)
-            messagesRef.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
-                guard
-                    let self = self,
-                    let dictionary = snapshot.value as? [String: Any],
-                    let message = Message(dictionary: dictionary) else {
-                        return
-                }
-                
-                if message.chatPartnerId() == self.user?.id {
-                    self.messages.append(message)
-                    DispatchQueue.main.async { [weak self] in
-                        self?.collectionView.reloadData()
-                    }
-                }
-            })
-        }
-    }
     
     var containerViewBottomAnchor: NSLayoutConstraint?
     
@@ -62,6 +36,7 @@ class ChatLogController: UICollectionViewController {
         return tf
     }()
     
+    // MARK:- View controller methods
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -84,12 +59,78 @@ class ChatLogController: UICollectionViewController {
                        object: nil)
     }
     
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        collectionView.collectionViewLayout.invalidateLayout()
+    }
+    
     // In order to fix Notification memory leak.
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         NotificationCenter.default.removeObserver(self)
     }
     
+    // MARK:- Methods
+    func observeMessages() {
+        guard
+            let uid = Auth.auth().currentUser?.uid,
+            let selectedId = user?.id else {
+                return
+        }
+        let userMessagesRef = Database.database().reference().child("user-messages").child(uid).child(selectedId)
+        userMessagesRef.observe(.childAdded) { (snapshot) in
+            
+            let messageId = snapshot.key
+            let messagesRef = Database.database().reference().child("messages").child(messageId)
+            messagesRef.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
+                guard
+                    let self = self,
+                    let dictionary = snapshot.value as? [String: Any],
+                    let message = Message(dictionary: dictionary) else {
+                        return
+                }
+//                 #warning("need to optimize ..") // -- > Success!
+//                print(" ## \(message.text)")
+                self.messages.append(message)
+                DispatchQueue.main.async { [weak self] in
+                    self?.collectionView.reloadData()
+                }
+            })
+        }
+    }
+    
+    @objc private func handleSend() {
+        let reference: DatabaseReference = Database.database().reference()
+        let messagesRef = reference.child("messages").childByAutoId()
+        guard
+            let text = inputTextField.text,
+            let toId = user?.id,
+            let fromId = Auth.auth().currentUser?.uid else {
+                return
+        }
+        let timestamp = Date().timeIntervalSince1970
+        let values = [ "fromId": fromId,
+                       "text": text,
+                       "timestamp": timestamp,
+                       "toId": toId ] as [String : Any]
+        
+        messagesRef.updateChildValues(values) { [weak self] (error, ref) in
+            if let error = error {
+                print("@@ messagesRef \(error.localizedDescription)")
+            }
+            self?.inputTextField.text = nil
+            guard let messageId = messagesRef.key else {
+                return
+            }
+            let userMessagesRef = reference.child("user-messages").child(fromId).child(toId)
+            userMessagesRef.updateChildValues([messageId: 1])
+            
+            // Counter part
+            let recipientUserMessagesRef = reference.child("user-messages").child(toId).child(fromId)
+            recipientUserMessagesRef.updateChildValues([messageId: 1])
+            self?.inputTextField.resignFirstResponder()
+        }
+    }
+
     @objc func handleKeyboardAppear(_ notification: Notification) {
         guard
             let userInfo = notification.userInfo,
@@ -110,10 +151,6 @@ class ChatLogController: UICollectionViewController {
                         self.containerViewBottomAnchor?.constant = -keyboardHeight
                         self.view.layoutIfNeeded()
         }, completion: nil)
-    }
-    
-    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        collectionView.collectionViewLayout.invalidateLayout()
     }
     
     // MARK:- Regarding collectionView methods
@@ -160,6 +197,7 @@ class ChatLogController: UICollectionViewController {
         }
     }
     
+    // MARK:- Setting up layouts methods
     func setupInputComponents() {
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
@@ -204,37 +242,6 @@ class ChatLogController: UICollectionViewController {
         separatorLineView.topAnchor.constraint(equalTo: containerView.topAnchor).isActive = true
         separatorLineView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
         separatorLineView.heightAnchor.constraint(equalToConstant: 1).isActive = true
-    }
-    
-    @objc private func handleSend() {
-        let reference: DatabaseReference = Database.database().reference()
-        let messagesRef = reference.child("messages").childByAutoId()
-        guard
-            let text = inputTextField.text,
-            let toId = user?.id,
-            let fromId = Auth.auth().currentUser?.uid else {
-                return
-        }
-        let timestamp = Date().timeIntervalSince1970
-        let values = [ "fromId": fromId,
-                       "text": text,
-                       "timestamp": timestamp,
-                       "toId": toId ] as [String : Any]
-//        messagesRef.updateChildValues(values)
-        messagesRef.updateChildValues(values) { [weak self] (error, ref) in
-            if let error = error {
-                print("@@ messagesRef \(error.localizedDescription)")
-            }
-            self?.inputTextField.text = nil
-            let userMessagesRef = reference.child("user-messages").child(fromId)
-            guard let messageId = messagesRef.key else {
-                return
-            }
-            userMessagesRef.updateChildValues([messageId: 1])
-            let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId)
-            recipientUserMessagesRef.updateChildValues([messageId: 1])
-            self?.inputTextField.resignFirstResponder()
-        }
     }
 }
 
