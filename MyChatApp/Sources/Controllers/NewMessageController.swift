@@ -16,18 +16,19 @@ protocol NewMessageControllerDelegate: class {
 // Show new message view in terms of sending messages
 class NewMessageController: UITableViewController {
     
-    weak var delegate: NewMessageControllerDelegate?
-    
     // MARK:- Properties
+    weak var delegate: NewMessageControllerDelegate?
     private let cellId = "NewMessageCellId"
     private var users = [User]()
     
-    // MARK:- View Life Cycle
+    // MARK:- Life Cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.dataSource = self
         tableView.delegate = self
         
+        navigationItem.title = "Chatting Partners"
+        navigationController?.navigationBar.prefersLargeTitles = false
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: UIBarButtonItem.Style.plain,
                                                            target: self, action: #selector(handleCancel))
         tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
@@ -39,6 +40,7 @@ class NewMessageController: UITableViewController {
         fetchUser()
     }
     
+    // MARK:- Fetching chattable users.
     private func fetchUser() {
         let ref = Database.database().reference()
         ref.child("users").observe(DataEventType.childAdded) { [weak self] (snapshot: DataSnapshot) in
@@ -51,9 +53,9 @@ class NewMessageController: UITableViewController {
             user.id = snapshot.key
             self.users.append(user)
             
-            // 비동기 작업 안에서 화면을 동기화하는 방법.. DispatchQueue.main 쓰자..
+            // Inside asynchronous background work .. Wanna sync tableView: DispatchQueue.main.async
             DispatchQueue.main.async { [weak self] in
-                self?.tableView.reloadData()    // tableView 동기화
+                self?.tableView.reloadData()
             }
         }
     }
@@ -62,7 +64,7 @@ class NewMessageController: UITableViewController {
         dismiss(animated: true, completion: nil)
     }
     
-    // MARK:- Regarding tableView
+    // MARK:- Regarding tableView of NewMessageController
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return users.count
     }
@@ -92,6 +94,7 @@ class NewMessageController: UITableViewController {
                 return
             }
             let user = self.users[indexPath.row]
+            // MessagesController 에서 구현하고 사용헀던 method 재사용
             self.delegate?.showChatController(for: user)
         }
     }

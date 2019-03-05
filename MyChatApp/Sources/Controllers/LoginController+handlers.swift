@@ -9,6 +9,7 @@
 import UIKit
 import Firebase
 
+// Handling about Register.
 extension LoginController {
     
     // MARK:- Event handling methods
@@ -113,10 +114,9 @@ extension LoginController {
    
 }
 
-// MARK:- Regarding Image Picker
+// MARK:- Extension regarding UIImagePickerControllerDelegate, UINavigationControllerDelegate
 extension LoginController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        
         var selectedImageFromPicker: UIImage?
         
         if let editedImage = info[.editedImage] as? UIImage {

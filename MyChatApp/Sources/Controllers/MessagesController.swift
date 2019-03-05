@@ -9,12 +9,8 @@
 import UIKit
 import Firebase
 
-protocol MessagesControllerDelegate: class {
-    func setNavBarTitle()
-}
-
 // Show user's messages view - Root
-class MessagesController: UITableViewController {
+class MessagesController: UITableViewController, LoginControllerDelegate {
     // MARK:- Properties for Messages Controller
     var messages: [Message] = []
     var messagesDictionary: [String: Message] = [:]
@@ -49,16 +45,47 @@ class MessagesController: UITableViewController {
         }
     }
     
+    // MARK:- SignInControllerDelegate methods
+    func setupNavBar(with name: String) {
+        self.navigationItem.title = name
+    }
+    
+    func fetchUserAndSetupNavBarTitle() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference()
+        // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values..
+        ref.child("users").child(uid).observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
+            guard
+                let self = self,
+                let dictionary = snapshot.value as? [String: Any] else {
+                    return
+            }
+            self.navigationItem.title = dictionary["name"] as? String
+            
+            // 메세지들 싹 다 지우고, 다시 불러오기
+            self.messages.removeAll()
+            self.messagesDictionary.removeAll()
+            self.tableView.reloadData()
+            self.observeUserMessages() // 메인에 해당 유저의 메세지들 불러오기
+            //            self.setupNavBarWithUser(user: user)
+        }
+    }
+    
+    // MARK:- Fetching user messages into MessagesController Screen
+    // 항목 목록에 대한 추가를 수신 대기. 즉 메세지들이 추가되는 것을 수신 대기.
     private func observeUserMessages() {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
         let reference = Database.database().reference()
-        let userReference = reference.child("user-messages").child(uid)
-        userReference.observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
-            let chattedUserId = snapshot.key
+        let meReference = reference.child("user-messages").child(uid)
+        meReference.observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
+            let partnerId = snapshot.key
             
-            reference.child("user-messages").child(uid).child(chattedUserId).observe(.childAdded, with: { [weak self] (snapshot) in
+            let partnerReference = reference.child("user-messages").child(uid).child(partnerId)
+            partnerReference.observe(.childAdded, with: { [weak self] (snapshot) in
                 guard let self = self else {
                     return
                 }
@@ -68,6 +95,7 @@ class MessagesController: UITableViewController {
         }
     }
     
+    // Fetch Message whenever user send message -> updateChildValues
     private func fetchMessage(with messageId: String) {
         let messagesReference = Database.database().reference().child("messages").child(messageId)
         messagesReference.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
@@ -79,17 +107,18 @@ class MessagesController: UITableViewController {
                     return
             }
             self.messagesDictionary[chatPartnerId] = message
+            self.messages.append(message)
             self.attemptReloadOfTable()
         })
     }
     
+    // Fix bug: too much relaoding table into just reload table once.
+    // Continuously cancel timer..and setup a new timer
+    // Finally, no longer cancel the timer. -> Because timer is working with main thread run loop..? Almost right
+    // So it fires the block after 0.1 sec
     func attemptReloadOfTable() {
-        // To fix bug: too much relaoding table into just reload table once.
-        // Continuously cancel timer..and setup a new timer
-        // Finally, no longer cancel the timer. -> Because timer is working with main thread run loop..? Almost right
-        // So it fires block after 0.1 sec
         self.timer?.invalidate()
-        //                print("canceled timer just before.")
+        //                print("Canceled timer just before.")
         self.timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false, block: { [weak self] (timer: Timer) in
             guard let self = self else {
                 return
@@ -108,11 +137,11 @@ class MessagesController: UITableViewController {
                 self?.tableView.reloadData()
                 print("!! table view reloaded after 0.1 seconds")
             }
-            
         })
         //                    print("Getting messages?")
     }
     
+    // MARK :- Presenting another ViewController
     @objc private func handleNewMessage() {
         let newMessageController = NewMessageController()
         newMessageController.delegate = self
@@ -151,92 +180,28 @@ class MessagesController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let message = messages[indexPath.row]
-        guard let chatPartnerId = message.chatPartnerId() else {
+        guard let partnerId = message.chatPartnerId() else {
             return
         }
-        let ref = Database.database().reference().child("users").child(chatPartnerId)
+        // Get partner info.
+        let ref = Database.database().reference().child("users").child(partnerId)
         ref.observeSingleEvent(of: .value) { [weak self] (snapshot) in
             guard
                 let self = self,
                 let dictionary = snapshot.value as? [String: Any],
-                let user = User(dictionary: dictionary) else {
+                let partner = User(dictionary: dictionary) else {
                     return
             }
-            user.id = chatPartnerId
-            self.showChatController(for: user)
+            partner.id = partnerId
+            self.showChatController(for: partner)
         }
     }
-    
-}
-
-
-// MARK:- Regarding Custom LoginControllerDelegate
-extension MessagesController: LoginControllerDelegate {
-    func fetchUserAndSetupNavBarTitle() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        let ref = Database.database().reference()
-        // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values..
-        ref.child("users").child(uid).observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
-            guard
-                let self = self,
-                let dictionary = snapshot.value as? [String: Any] else {
-                    return
-            }
-            self.navigationItem.title = dictionary["name"] as? String
-            
-            self.messages.removeAll()
-            self.messagesDictionary.removeAll()
-            
-            self.tableView.reloadData()
-            self.observeUserMessages() // 메인에 메세지들 불러오기
-            //            self.setupNavBarWithUser(user: user)
-        }
-    }
-    
-    func setupNavBar(with name: String) {
-        self.navigationItem.title = name
-    }
-    //    func setupNavBarWithUser(user: User) {
-    //        let containerView = UIView()
-    //
-    //        let profileImageView = UIImageView()
-    //        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-    //        profileImageView.contentMode = .scaleAspectFill
-    //        profileImageView.layer.cornerRadius = 20
-    //        profileImageView.clipsToBounds = true
-    //        guard let urlString = user.profileImageUrl else {
-    //            return
-    //        }
-    //        profileImageView.loadImageUsingCacheWithUrlString(urlString)
-    //
-    //        containerView.addSubview(profileImageView)
-    //        // need x, y, width, height
-    //        profileImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
-    //        profileImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
-    //        profileImageView.widthAnchor.constraint(equalToConstant: 40).isActive = true
-    //        profileImageView.heightAnchor.constraint(equalToConstant: 40).isActive = true
-    //
-    //        let nameLabel = UILabel()
-    //        nameLabel.text = user.name
-    //        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-    //
-    //        containerView.addSubview(nameLabel)
-    //        // need x, y, width, height
-    //        nameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8).isActive = true
-    //        nameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor).isActive = true
-    //        nameLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor).isActive = true
-    //        nameLabel.heightAnchor.constraint(equalTo: profileImageView.heightAnchor).isActive = true
-    //
-    //        self.navigationItem.titleView = containerView
-    //    }
 }
 
 extension MessagesController: NewMessageControllerDelegate {
     @objc internal func showChatController(for user: User) {
         let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
-        chatLogController.user = user
+        chatLogController.partner = user
         navigationController?.pushViewController(chatLogController, animated: true)
     }
 }

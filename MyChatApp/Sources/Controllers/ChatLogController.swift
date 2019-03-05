@@ -13,19 +13,20 @@ class ChatLogController: UICollectionViewController {
     
     // MARK:- Properties for controller
     let cellId = "ChatLogCellId"
-    // 사용자의 채팅 대상
-    var user: User? {
+    // User's partner
+    var partner: User? {
         didSet {
-            guard let user = user else {
+            guard let partner = partner else {
                 return
             }
-            navigationItem.title = user.name
+            navigationItem.title = partner.name
             observeMessages()
         }
     }
     // 사용자 - 대상 간의 채팅 메세지들
     var messages: [Message] = []
     
+    // MARK:- ChatLog Screen properties
     var containerViewBottomAnchor: NSLayoutConstraint?
     
     lazy var inputTextField: UITextField = {
@@ -36,12 +37,11 @@ class ChatLogController: UICollectionViewController {
         return tf
     }()
     
-    // MARK:- View controller methods
+    // MARK:- Life Cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
         
         collectionView.backgroundColor = .white
-        
         collectionView.alwaysBounceVertical = true  // Draggable..
         collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
         collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
@@ -69,11 +69,11 @@ class ChatLogController: UICollectionViewController {
         NotificationCenter.default.removeObserver(self)
     }
     
-    // MARK:- Methods
+    // MARK:- Event Methods
     func observeMessages() {
         guard
             let uid = Auth.auth().currentUser?.uid,
-            let selectedId = user?.id else {
+            let selectedId = partner?.id else {
                 return
         }
         let userMessagesRef = Database.database().reference().child("user-messages").child(uid).child(selectedId)
@@ -89,7 +89,7 @@ class ChatLogController: UICollectionViewController {
                         return
                 }
 //                 #warning("need to optimize ..") // -- > Success!
-//                print(" ## \(message.text)")
+                print(" ## \(message.text ?? "Something is wrong with message.text")")
                 self.messages.append(message)
                 DispatchQueue.main.async { [weak self] in
                     self?.collectionView.reloadData()
@@ -99,11 +99,11 @@ class ChatLogController: UICollectionViewController {
     }
     
     @objc private func handleSend() {
-        let reference: DatabaseReference = Database.database().reference()
-        let messagesRef = reference.child("messages").childByAutoId()
+        let ref: DatabaseReference = Database.database().reference()
+        let messagesRef = ref.child("messages").childByAutoId()
         guard
             let text = inputTextField.text,
-            let toId = user?.id,
+            let toId = partner?.id,
             let fromId = Auth.auth().currentUser?.uid else {
                 return
         }
@@ -115,18 +115,18 @@ class ChatLogController: UICollectionViewController {
         
         messagesRef.updateChildValues(values) { [weak self] (error, ref) in
             if let error = error {
-                print("@@ messagesRef \(error.localizedDescription)")
+                print("@@ messagesRef: \(error.localizedDescription)")
             }
             self?.inputTextField.text = nil
             guard let messageId = messagesRef.key else {
                 return
             }
-            let userMessagesRef = reference.child("user-messages").child(fromId).child(toId)
+            let userMessagesRef = ref.child("user-messages").child(fromId).child(toId)
             userMessagesRef.updateChildValues([messageId: 1])
-            
             // Counter part
-            let recipientUserMessagesRef = reference.child("user-messages").child(toId).child(fromId)
+            let recipientUserMessagesRef = ref.child("user-messages").child(toId).child(fromId)
             recipientUserMessagesRef.updateChildValues([messageId: 1])
+            
             self?.inputTextField.resignFirstResponder()
         }
     }
@@ -175,7 +175,7 @@ class ChatLogController: UICollectionViewController {
     }
     
     func setupCell(cell: ChatMessageCell, message: Message) {
-        guard let profileImageUrl = self.user?.profileImageUrl else {
+        guard let profileImageUrl = self.partner?.profileImageUrl else {
             return
         }
         cell.profileImageView.loadImageUsingCache(with: profileImageUrl)
@@ -245,6 +245,7 @@ class ChatLogController: UICollectionViewController {
     }
 }
 
+// MARK:- Extension regarding UICollectionViewDelegateFlowLayout
 extension ChatLogController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         var height: CGFloat = 80
@@ -264,10 +265,16 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
     }
 }
 
+// MARK:- Extension regarding UITextFieldDelegate
 extension ChatLogController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
-        handleSend()
+        guard let text = inputTextField.text else {
+            return false
+        }
+        if text.isEmpty == false {
+            handleSend()
+        }
         return true
     }
 }
