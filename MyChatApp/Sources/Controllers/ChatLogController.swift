@@ -89,7 +89,7 @@ class ChatLogController: UICollectionViewController {
                         return
                 }
 //                 #warning("need to optimize ..") // -- > Success!
-                print(" ## \(message.text ?? "Something is wrong with message.text")")
+//                print(" ## \(message.text ?? "Something is wrong with message.text")")
                 self.messages.append(message)
                 DispatchQueue.main.async { [weak self] in
                     self?.collectionView.reloadData()
@@ -252,7 +252,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         if let text = messages[indexPath.item].text {
             height = estimatedFrame(for: text).height + 20
         }
-        let width = UIScreen.main.bounds.width - view.safeAreaInsets.left - view.safeAreaInsets.right
+        let width = view.safeAreaLayoutGuide.layoutFrame.width
         return CGSize(width: width, height: height)
     }
     
