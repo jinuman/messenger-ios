@@ -69,9 +69,13 @@ extension LoginController {
                         print("@@ download url error: \(err.localizedDescription)")
                         return
                     }
-                    guard let urlString = url?.absoluteString else { return }
+                    guard let imageUrl = url?.absoluteString else { return }
                     // values 생성
-                    let values = ["profileImageUrl": urlString, "name": name, "email": email]
+                    let values = [
+                        "profileImageUrl" : imageUrl,
+                        "name" : name,
+                        "email" : email
+                    ]
                     self?.registerUserIntoDatabaseWithUid(uid: uid, values: values)
                 })
             })

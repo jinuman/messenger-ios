@@ -110,10 +110,12 @@ class ChatLogController: UICollectionViewController {
                 return
         }
         let timestamp = Date().timeIntervalSince1970
-        let values = ["toId": toId,
-                      "fromId": fromId,
-                      "timestamp": timestamp,
-                      "text": text] as [String : Any]
+        let values = [
+            "toId" : toId,
+            "fromId" : fromId,
+            "timestamp" : timestamp,
+            "text" : text
+            ] as [String : Any]
         
         messagesRef.updateChildValues(values) { [weak self] (error, ref) in
             if let error = error {
@@ -356,10 +358,14 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
             let toId = partner?.id,
             let fromId = Auth.auth().currentUser?.uid else { return }
         let timestamp = Date().timeIntervalSince1970
-        let values = ["toId": toId,
-                      "fromId": fromId,
-                      "timestamp": timestamp,
-                      "imageUrl": imageUrl] as [String : Any]
+        let values = [
+            "toId" : toId,
+            "fromId" : fromId,
+            "timestamp" : timestamp,
+            "imageUrl" : imageUrl,
+            "imageWidth" : 0,
+            "imageHeight" : 0
+            ] as [String : Any]
         
         messagesRef.updateChildValues(values) { [weak self] (error, ref) in
             if let error = error {
