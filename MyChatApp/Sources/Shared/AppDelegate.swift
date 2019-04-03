@@ -19,13 +19,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         
         window = UIWindow(frame: UIScreen.main.bounds)
-        window?.makeKeyAndVisible()
-    
         let rootVC = MessagesController()
-        window?.rootViewController = UINavigationController(rootViewController: rootVC)
+        if let window = window {
+            window.rootViewController = UINavigationController(rootViewController: rootVC)
+            window.makeKeyAndVisible()
+        }
+        
+        customizeNavigationBar()
         
         return true
     }
     
+    private func customizeNavigationBar() {
+        if let navController = window?.rootViewController as? UINavigationController {
+            navController.navigationBar.prefersLargeTitles = false
+            navController.navigationBar.isTranslucent = true
+            navController.navigationBar.barStyle = UIBarStyle.default
+            navController.navigationBar.tintColor = UIColor.black    // BarButton color
+            navController.navigationBar.barTintColor = .white
+        }
+    }
 }
 
