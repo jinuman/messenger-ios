@@ -81,11 +81,10 @@ class MessagesController: UITableViewController {
         messagesReference.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
             guard
                 let self = self,
-                let dictionary = snapshot.value as? [String: Any],
-                let message = Message(dictionary: dictionary),
-                let chatPartnerId = message.chatPartnerId() else {
-                    return
-            }
+                let dictionary = snapshot.value as? [String: Any] else { return }
+            let message = Message(dictionary: dictionary)
+            guard let chatPartnerId = message.chatPartnerId() else { return }
+                
             self.messagesDictionary[chatPartnerId] = message
             self.messages.append(message)
             self.attemptReloadOfTable()

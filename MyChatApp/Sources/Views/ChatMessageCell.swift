@@ -13,12 +13,21 @@ class ChatMessageCell: UICollectionViewCell {
     static let bubbleBlue = UIColor(r: 0, g: 137, b: 249)
     
     let profileImageView: UIImageView = {
-        let imgView = UIImageView()
-        imgView.translatesAutoresizingMaskIntoConstraints = false
-        imgView.layer.cornerRadius = 16
-        imgView.layer.masksToBounds = true
-        imgView.contentMode = .scaleAspectFill
-        return imgView
+        let iv = UIImageView()
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        iv.layer.cornerRadius = 16
+        iv.layer.masksToBounds = true
+        iv.contentMode = .scaleAspectFill
+        return iv
+    }()
+    
+    let messageImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        iv.layer.cornerRadius = 16
+        iv.layer.masksToBounds = true
+        iv.contentMode = .scaleAspectFill
+        return iv
     }()
     
     let bubbleView: UIView = {
@@ -46,9 +55,10 @@ class ChatMessageCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        addSubview(profileImageView)
-        addSubview(bubbleView)
-        addSubview(textView)
+        [profileImageView, bubbleView, textView].forEach {
+            addSubview($0)
+        }
+        bubbleView.addSubview(messageImageView)
         
         // need x, y, w, h
         profileImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
@@ -71,6 +81,12 @@ class ChatMessageCell: UICollectionViewCell {
         textView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
         textView.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -8).isActive = true
         textView.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
+        
+        // x, y, w, h
+        messageImageView.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor).isActive = true
+        messageImageView.topAnchor.constraint(equalTo: bubbleView.topAnchor).isActive = true
+        messageImageView.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor).isActive = true
+        messageImageView.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor).isActive = true
     }
     
     required init?(coder aDecoder: NSCoder) {

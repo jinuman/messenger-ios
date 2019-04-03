@@ -11,15 +11,27 @@ import Firebase
 
 class Message {
     var fromId: String?
-    var text: String?
-    var timestamp: Date?
     var toId: String?
+    var timestamp: Date?
+    var text: String?
+    var imageUrl: String?
+    var imageWidth: Double?
+    var imageHeight: Double?
     
-    init(fromId: String, text: String, timestamp: Date, toId: String) {
-        self.fromId = fromId
-        self.text = text
-        self.timestamp = timestamp
-        self.toId = toId
+    init(dictionary: [String : Any]) {
+        self.fromId = dictionary["fromId"] as? String
+        self.toId = dictionary["toId"] as? String
+        
+        if let timestamp = dictionary["timestamp"] as? Double {
+            self.timestamp = Date(timeIntervalSince1970: timestamp)
+        } else {
+            self.timestamp = nil
+        }
+        
+        self.text = dictionary["text"] as? String
+        self.imageUrl = dictionary["imageUrl"] as? String
+        self.imageWidth = dictionary["imageWidth"] as? Double
+        self.imageHeight = dictionary["imageHeight"] as? Double
     }
     
     // Based in currentUser, if it is toId or fromId
@@ -29,18 +41,3 @@ class Message {
             : fromId
     }
 }
-
-extension Message {
-    convenience init?(dictionary: [String: Any]) {
-        guard
-            let fromId = dictionary["fromId"] as? String,
-            let text = dictionary["text"] as? String,
-            let timestamp = dictionary["timestamp"] as? Double,
-            let toId = dictionary["toId"] as? String else {
-                return nil
-        }
-        self.init(fromId: fromId, text: text, timestamp: Date(timeIntervalSince1970: timestamp), toId: toId)
-    }
-}
-
-

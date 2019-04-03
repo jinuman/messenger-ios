@@ -69,6 +69,10 @@ class ChatLogController: UICollectionViewController {
         NotificationCenter.default.removeObserver(self)
     }
     
+    deinit {
+        print("ChatLog Controller \(#function)")
+    }
+    
     // MARK:- Event Methods
     func observeMessages() {
         guard
@@ -84,10 +88,9 @@ class ChatLogController: UICollectionViewController {
             messagesRef.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
                 guard
                     let self = self,
-                    let dictionary = snapshot.value as? [String: Any],
-                    let message = Message(dictionary: dictionary) else {
-                        return
-                }
+                    let dictionary = snapshot.value as? [String: Any] else { return }
+                
+                let message = Message(dictionary: dictionary)
 //                 #warning("need to optimize ..") // -- > Success!
 //                print(" ## \(message.text ?? "Something is wrong with message.text")")
                 self.messages.append(message)
@@ -98,7 +101,7 @@ class ChatLogController: UICollectionViewController {
         }
     }
     
-    @objc private func handleSend() {
+    @objc private func handleSendMessage() {
         let messagesRef = Database.database().reference().child("messages").childByAutoId()
         guard
             let text = inputTextField.text,
@@ -107,10 +110,10 @@ class ChatLogController: UICollectionViewController {
                 return
         }
         let timestamp = Date().timeIntervalSince1970
-        let values = [ "fromId": fromId,
-                       "text": text,
-                       "timestamp": timestamp,
-                       "toId": toId ] as [String : Any]
+        let values = ["toId": toId,
+                      "fromId": fromId,
+                      "timestamp": timestamp,
+                      "text": text] as [String : Any]
         
         messagesRef.updateChildValues(values) { [weak self] (error, ref) in
             if let error = error {
@@ -126,7 +129,6 @@ class ChatLogController: UICollectionViewController {
             recipientUserMessagesRef.updateChildValues([messageId: 1])
             
             self?.inputTextField.resignFirstResponder()
-            
         }
     }
 
@@ -155,7 +157,7 @@ class ChatLogController: UICollectionViewController {
     @objc fileprivate func handleUploadTap() {
         let imagePicker = UIImagePickerController()
         
-//        imagePicker.delegate = self
+        imagePicker.delegate = self
         imagePicker.allowsEditing = true
         
         present(imagePicker, animated: true, completion: nil)
@@ -185,7 +187,7 @@ class ChatLogController: UICollectionViewController {
         let sendButton = UIButton(type: .system)
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         sendButton.setTitle("Send", for: .normal)
-        sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
+        sendButton.addTarget(self, action: #selector(handleSendMessage), for: .touchUpInside)
         
         let separatorLineView = UIView()
         separatorLineView.translatesAutoresizingMaskIntoConstraints = false
@@ -228,7 +230,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as? ChatMessageCell else {
-            fatalError("ChatMessageCell is not proper..")
+            fatalError("Chat Log cell is bad.")
         }
         let message = messages[indexPath.item]
         cell.textView.text = message.text
@@ -238,14 +240,11 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         if let text = message.text {
             cell.bubbleWidthAnchor?.constant = estimatedFrame(for: text).width + 32
         }
-        
         return cell
     }
     
     func setupCell(cell: ChatMessageCell, message: Message) {
-        guard let profileImageUrl = self.partner?.profileImageUrl else {
-            return
-        }
+        guard let profileImageUrl = self.partner?.profileImageUrl else { return }
         cell.profileImageView.loadImageUsingCache(with: profileImageUrl)
         
         if message.fromId == Auth.auth().currentUser?.uid {
@@ -262,6 +261,14 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
             cell.profileImageView.isHidden = false
             cell.bubbleTrailingAnchor?.isActive = false
             cell.bubbleLeadingAnchor?.isActive = true
+        }
+        
+        if let messageImageUrl = message.imageUrl {
+            cell.messageImageView.loadImageUsingCache(with: messageImageUrl)
+            cell.messageImageView.isHidden = false
+            cell.bubbleView.backgroundColor = .clear
+        } else {
+            cell.messageImageView.isHidden = true
         }
     }
     
@@ -291,10 +298,84 @@ extension ChatLogController: UITextFieldDelegate {
             return false
         }
         if text.isEmpty == false {
-            handleSend()
+            handleSendMessage()
         }
         return true
     }
 }
 
+// MARK:- Regarding Image Picker
+extension ChatLogController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        var selectedImageFromPicker: UIImage?
+        
+        if let editedImage = info[.editedImage] as? UIImage {
+            selectedImageFromPicker = editedImage
+        } else if let originalImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
+            selectedImageFromPicker = originalImage
+        }
+        if let selectedImage = selectedImageFromPicker {
+            //            profileImageView.image = selectedImage
+            uploadToFirebaseStorage(using: selectedImage)
+        }
+        dismiss(animated: true, completion: nil)
+    }
+    
+    private func uploadToFirebaseStorage(using image: UIImage) {
+        let imageName = UUID().uuidString
+        let storageRef = Storage.storage().reference().child("message_images").child(imageName)
+        
+        guard let uploadData = image.jpegData(compressionQuality: 0.05) else {
+            return
+        }
+        
+        storageRef.putData(uploadData, metadata: nil) { (metadata, error) in
+            if let error = error {
+                print("@@ Message image upload error: \(error.localizedDescription)")
+                return
+            }
+            print("!! Successfully put data to Firebase storage")
+            storageRef.downloadURL(completion: { (url, err) in
+                if let err = err {
+                    print("@@ Download url error: \(err.localizedDescription)")
+                    return
+                }
+                guard let imageUrl = url?.absoluteString else { return }
+                self.sendMessage(with: imageUrl)
+            })
+        }
+    }
+    
+    private func sendMessage(with imageUrl: String) {
+        let messagesRef = Database.database().reference().child("messages").childByAutoId()
+        guard
+            let toId = partner?.id,
+            let fromId = Auth.auth().currentUser?.uid else { return }
+        let timestamp = Date().timeIntervalSince1970
+        let values = ["toId": toId,
+                      "fromId": fromId,
+                      "timestamp": timestamp,
+                      "imageUrl": imageUrl] as [String : Any]
+        
+        messagesRef.updateChildValues(values) { [weak self] (error, ref) in
+            if let error = error {
+                print("@@ messagesRef: \(error.localizedDescription)")
+            }
+            self?.inputTextField.text = nil
+            guard let messageId = messagesRef.key else { return }
+            
+            let userMessagesRef = Database.database().reference().child("user-messages").child(fromId).child(toId)
+            userMessagesRef.updateChildValues([messageId: 1])
+            // Counter part
+            let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId).child(fromId)
+            recipientUserMessagesRef.updateChildValues([messageId: 1])
+            
+            self?.inputTextField.resignFirstResponder()
+        }
+    }
+}
 

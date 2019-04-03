@@ -59,32 +59,28 @@ extension LoginController {
             }
             // first upload images to storage..
             storageRef.putData(uploadData, metadata: nil, completion: { [weak self] (metadata, error) in
-                if error != nil {
-                    print("@@ putData: \(error?.localizedDescription ?? "")")
+                if let error = error {
+                    print("@@ Profile image upload error: \(error.localizedDescription)")
                     return
                 }
                 // url 생성
-                storageRef.downloadURL(completion: { (url, error) in
-                    if error != nil { 
-                        print("@@ downloadURL: \(error?.localizedDescription ?? "")")
+                storageRef.downloadURL(completion: { (url, err) in
+                    if let err = err {
+                        print("@@ download url error: \(err.localizedDescription)")
                         return
                     }
-                    guard let urlString = url?.absoluteString else {
-                        return
-                    }
+                    guard let urlString = url?.absoluteString else { return }
                     // values 생성
                     let values = ["profileImageUrl": urlString, "name": name, "email": email]
                     self?.registerUserIntoDatabaseWithUid(uid: uid, values: values)
                 })
-                
             })
         }
     }
     
     fileprivate func registerUserIntoDatabaseWithUid(uid: String, values: [String: Any]) {
-        let ref: DatabaseReference = Database.database().reference()
-        let usersReference = ref.child("users").child(uid)
-        usersReference.updateChildValues(values, withCompletionBlock: { [weak self] (err, ref) in
+        let usersRef = Database.database().reference().child("users").child(uid)
+        usersRef.updateChildValues(values, withCompletionBlock: { [weak self] (err, ref) in
             guard
                 let self = self,
                 let name = values["name"] as? String else {
