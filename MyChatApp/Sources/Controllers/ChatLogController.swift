@@ -99,8 +99,7 @@ class ChatLogController: UICollectionViewController {
     }
     
     @objc private func handleSend() {
-        let ref: DatabaseReference = Database.database().reference()
-        let messagesRef = ref.child("messages").childByAutoId()
+        let messagesRef = Database.database().reference().child("messages").childByAutoId()
         guard
             let text = inputTextField.text,
             let toId = partner?.id,
@@ -118,16 +117,16 @@ class ChatLogController: UICollectionViewController {
                 print("@@ messagesRef: \(error.localizedDescription)")
             }
             self?.inputTextField.text = nil
-            guard let messageId = messagesRef.key else {
-                return
-            }
-            let userMessagesRef = ref.child("user-messages").child(fromId).child(toId)
+            guard let messageId = messagesRef.key else { return }
+            
+            let userMessagesRef = Database.database().reference().child("user-messages").child(fromId).child(toId)
             userMessagesRef.updateChildValues([messageId: 1])
             // Counter part
-            let recipientUserMessagesRef = ref.child("user-messages").child(toId).child(fromId)
+            let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId).child(fromId)
             recipientUserMessagesRef.updateChildValues([messageId: 1])
             
             self?.inputTextField.resignFirstResponder()
+            
         }
     }
 
@@ -153,7 +152,76 @@ class ChatLogController: UICollectionViewController {
         }, completion: nil)
     }
     
-    // MARK:- Regarding collectionView methods
+    @objc fileprivate func handleUploadTap() {
+        let imagePicker = UIImagePickerController()
+        
+//        imagePicker.delegate = self
+        imagePicker.allowsEditing = true
+        
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    // MARK:- Setting up layouts methods
+    func setupInputComponents() {
+        let containerView = UIView()
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.backgroundColor = .white
+        
+        view.addSubview(containerView)
+        // need x, y, w, h
+        containerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
+        containerView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
+        containerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        containerViewBottomAnchor?.isActive = true
+        
+        let uploadImageView = UIImageView()
+        uploadImageView.translatesAutoresizingMaskIntoConstraints = false
+        uploadImageView.image = #imageLiteral(resourceName: "upload_image_icon")
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleUploadTap))
+        uploadImageView.addGestureRecognizer(tapRecognizer)
+        uploadImageView.isUserInteractionEnabled = true
+        
+        let sendButton = UIButton(type: .system)
+        sendButton.translatesAutoresizingMaskIntoConstraints = false
+        sendButton.setTitle("Send", for: .normal)
+        sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
+        
+        let separatorLineView = UIView()
+        separatorLineView.translatesAutoresizingMaskIntoConstraints = false
+        separatorLineView.backgroundColor = UIColor(r: 220, g: 220, b: 220)
+        
+        [uploadImageView, inputTextField, sendButton, separatorLineView].forEach {
+            containerView.addSubview($0)
+        }
+        // need x, y, w, h
+        uploadImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
+        uploadImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        uploadImageView.widthAnchor.constraint(equalToConstant: 44).isActive = true
+        uploadImageView.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        
+        // need x, y, w, h
+        inputTextField.leadingAnchor.constraint(equalTo: uploadImageView.trailingAnchor, constant: 8).isActive = true
+        inputTextField.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        inputTextField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor).isActive = true
+        inputTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor).isActive = true
+        
+        // need x, y, w, h
+        sendButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor).isActive = true
+        sendButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        sendButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        sendButton.heightAnchor.constraint(equalTo: containerView.heightAnchor).isActive = true
+        
+        // need x, y, w, h
+        separatorLineView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
+        separatorLineView.topAnchor.constraint(equalTo: containerView.topAnchor).isActive = true
+        separatorLineView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
+        separatorLineView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+    }
+}
+
+// MARK:- Extension regarding collectionView
+extension ChatLogController: UICollectionViewDelegateFlowLayout {
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return messages.count
     }
@@ -165,7 +233,7 @@ class ChatLogController: UICollectionViewController {
         let message = messages[indexPath.item]
         cell.textView.text = message.text
         
-       setupCell(cell: cell, message: message)
+        setupCell(cell: cell, message: message)
         
         if let text = message.text {
             cell.bubbleWidthAnchor?.constant = estimatedFrame(for: text).width + 32
@@ -197,56 +265,6 @@ class ChatLogController: UICollectionViewController {
         }
     }
     
-    // MARK:- Setting up layouts methods
-    func setupInputComponents() {
-        let containerView = UIView()
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        containerView.backgroundColor = .white
-        
-        view.addSubview(containerView)
-        // need x, y, w, h
-        containerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
-        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-        containerViewBottomAnchor?.isActive = true
-        
-        containerView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
-        containerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        
-        let sendButton = UIButton(type: .system)
-        sendButton.translatesAutoresizingMaskIntoConstraints = false
-        sendButton.setTitle("Send", for: .normal)
-        sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
-        containerView.addSubview(sendButton)
-        
-        // need x, y, w, h
-        sendButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor).isActive = true
-        sendButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
-        sendButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
-        sendButton.heightAnchor.constraint(equalTo: containerView.heightAnchor).isActive = true
-        
-        containerView.addSubview(inputTextField)
-        
-        // need x, y, w, h
-        inputTextField.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8).isActive = true
-        inputTextField.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
-        inputTextField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor).isActive = true
-        inputTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor).isActive = true
-        
-        let separatorLineView = UIView()
-        separatorLineView.translatesAutoresizingMaskIntoConstraints = false
-        separatorLineView.backgroundColor = UIColor(r: 220, g: 220, b: 220)
-        containerView.addSubview(separatorLineView)
-        
-        // need x, y, w, h
-        separatorLineView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
-        separatorLineView.topAnchor.constraint(equalTo: containerView.topAnchor).isActive = true
-        separatorLineView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
-        separatorLineView.heightAnchor.constraint(equalToConstant: 1).isActive = true
-    }
-}
-
-// MARK:- Extension regarding UICollectionViewDelegateFlowLayout
-extension ChatLogController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         var height: CGFloat = 80
         if let text = messages[indexPath.item].text {
@@ -278,3 +296,5 @@ extension ChatLogController: UITextFieldDelegate {
         return true
     }
 }
+
+

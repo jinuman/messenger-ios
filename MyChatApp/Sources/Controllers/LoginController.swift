@@ -9,12 +9,6 @@
 import UIKit
 import Firebase
 
-protocol LoginControllerDelegate: class {
-//    func setupNavBarWithUser(user: User)
-    func setupNavBar(with name: String)
-    func fetchUserAndSetupNavBarTitle()
-}
-
 // Show Login & Register view
 class LoginController: UIViewController {
     
@@ -24,7 +18,7 @@ class LoginController: UIViewController {
     }()
     
     // MARK:- LoginControllerDelegate property
-    weak var delegate: LoginControllerDelegate?
+    weak var delegate: MessagesControllerDelegate?
 
     // MARK:- View properties
     lazy var profileImageView: UIImageView = {

@@ -10,13 +10,13 @@
 		36100EE72228F8600069036C /* ChatMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36100EE62228F8600069036C /* ChatMessageCell.swift */; };
 		3651A670222529A200185647 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3651A66F222529A200185647 /* Message.swift */; };
 		3651A67322266C9B00185647 /* UserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3651A67222266C9B00185647 /* UserCell.swift */; };
+		366C414922534C3C00101446 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 366C414822534C3C00101446 /* GoogleService-Info.plist */; };
 		369ABF4E220E8E1D00363286 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF4D220E8E1D00363286 /* AppDelegate.swift */; };
 		369ABF50220E8E1D00363286 /* MessagesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF4F220E8E1D00363286 /* MessagesController.swift */; };
 		369ABF55220E8E1D00363286 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF54220E8E1D00363286 /* Assets.xcassets */; };
 		369ABF58220E8E1D00363286 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF56220E8E1D00363286 /* LaunchScreen.storyboard */; };
 		369ABF64220ED0F600363286 /* LoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF63220ED0F600363286 /* LoginController.swift */; };
 		369ABF6A220ED2C500363286 /* UIKit+MyChatApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF69220ED2C500363286 /* UIKit+MyChatApp.swift */; };
-		369ABF6C220F082500363286 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF6B220F082500363286 /* GoogleService-Info.plist */; };
 		36BC1C162223F6520083210E /* ChatLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BC1C152223F6520083210E /* ChatLogController.swift */; };
 		36D64A2E2216C62700E353E3 /* LoginController+handlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D64A2D2216C62700E353E3 /* LoginController+handlers.swift */; };
 		36D988FC221426E700751C3E /* NewMessageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D988FB221426E700751C3E /* NewMessageController.swift */; };
@@ -28,6 +28,7 @@
 		36100EE62228F8600069036C /* ChatMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageCell.swift; sourceTree = "<group>"; };
 		3651A66F222529A200185647 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		3651A67222266C9B00185647 /* UserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCell.swift; sourceTree = "<group>"; };
+		366C414822534C3C00101446 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		369ABF4A220E8E1D00363286 /* MyChatApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyChatApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		369ABF4D220E8E1D00363286 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		369ABF4F220E8E1D00363286 /* MessagesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesController.swift; sourceTree = "<group>"; };
@@ -36,7 +37,6 @@
 		369ABF59220E8E1D00363286 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		369ABF63220ED0F600363286 /* LoginController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginController.swift; sourceTree = "<group>"; };
 		369ABF69220ED2C500363286 /* UIKit+MyChatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIKit+MyChatApp.swift"; sourceTree = "<group>"; };
-		369ABF6B220F082500363286 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		36BC1C152223F6520083210E /* ChatLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLogController.swift; sourceTree = "<group>"; };
 		36D64A2D2216C62700E353E3 /* LoginController+handlers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginController+handlers.swift"; sourceTree = "<group>"; };
 		36D988FB221426E700751C3E /* NewMessageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMessageController.swift; sourceTree = "<group>"; };
@@ -121,9 +121,9 @@
 		369ABF67220ED14700363286 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				366C414822534C3C00101446 /* GoogleService-Info.plist */,
 				369ABF54220E8E1D00363286 /* Assets.xcassets */,
 				369ABF59220E8E1D00363286 /* Info.plist */,
-				369ABF6B220F082500363286 /* GoogleService-Info.plist */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -197,6 +197,7 @@
 				TargetAttributes = {
 					369ABF49220E8E1D00363286 = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1020;
 					};
 				};
 			};
@@ -224,8 +225,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				369ABF58220E8E1D00363286 /* LaunchScreen.storyboard in Resources */,
-				369ABF6C220F082500363286 /* GoogleService-Info.plist in Resources */,
 				369ABF55220E8E1D00363286 /* Assets.xcassets in Resources */,
+				366C414922534C3C00101446 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -439,7 +440,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.jinuman.MyChatApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -458,7 +459,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.jinuman.MyChatApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

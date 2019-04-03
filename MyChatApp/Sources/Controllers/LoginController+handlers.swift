@@ -53,7 +53,7 @@ extension LoginController {
             // Successfully authenticated user.
             let imageName = UUID().uuidString
             
-            let storageRef = Storage.storage().reference().child("profile_images").child("\(imageName).png")
+            let storageRef = Storage.storage().reference().child("profile_images").child(imageName)
             guard let uploadData = self.profileImageView.image?.jpegData(compressionQuality: 0.05) else {
                 return
             }
@@ -96,7 +96,7 @@ extension LoginController {
             } else {
                 print("!! Register Success !!")
             }
-            // If register success.. then setup navbar with registered user..
+            // Should refresh main UI with current user.
             
             // Don't need full of this call..
 //            self?.messagesController?.fetchUserAndSetupNavBarTitle()

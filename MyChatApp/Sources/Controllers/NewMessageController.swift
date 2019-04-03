@@ -9,15 +9,11 @@
 import UIKit
 import Firebase
 
-protocol NewMessageControllerDelegate: class {
-    func showChatController(for user: User)
-}
-
 // Show new message view in terms of sending messages
 class NewMessageController: UITableViewController {
     
     // MARK:- Properties
-    weak var delegate: NewMessageControllerDelegate?
+    weak var delegate: MessagesControllerDelegate?
     private let cellId = "NewMessageCellId"
     private var users = [User]()
     
@@ -42,8 +38,7 @@ class NewMessageController: UITableViewController {
     
     // MARK:- Fetching chattable users.
     private func fetchUser() {
-        let ref = Database.database().reference()
-        ref.child("users").observe(DataEventType.childAdded) { [weak self] (snapshot: DataSnapshot) in
+        Database.database().reference().child("users").observe(DataEventType.childAdded) { [weak self] (snapshot: DataSnapshot) in
             guard
                 let self = self,
                 let dictionary = snapshot.value as? [String: Any],
