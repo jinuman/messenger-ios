@@ -12,7 +12,7 @@ import Firebase
 class ChatLogController: UICollectionViewController {
     
     // MARK:- Properties for controller
-    let cellId = "ChatLogCellId"
+    fileprivate let cellId = "ChatLogCellId"
     // User's partner
     var partner: User? {
         didSet {
@@ -40,12 +40,10 @@ class ChatLogController: UICollectionViewController {
     // MARK:- Life Cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .white
         
-        collectionView.backgroundColor = .white
-        collectionView.alwaysBounceVertical = true  // Draggable..
-        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
-        collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
-        collectionView.register(ChatMessageCell.self, forCellWithReuseIdentifier: cellId)
+        setupCollectionView()
+        
         setupInputComponents()
         
         let nc = NotificationCenter.default
@@ -166,17 +164,31 @@ class ChatLogController: UICollectionViewController {
     }
     
     // MARK:- Setting up layouts methods
-    func setupInputComponents() {
+    fileprivate func setupCollectionView() {
+        let guide = view.safeAreaLayoutGuide
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.backgroundColor = .white
+        collectionView.alwaysBounceVertical = true  // Draggable..
+        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
+        collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
+        collectionView.register(ChatMessageCell.self, forCellWithReuseIdentifier: cellId)
+        
+        collectionView.leadingAnchor.constraint(equalTo: guide.leadingAnchor).isActive = true
+        collectionView.topAnchor.constraint(equalTo: guide.topAnchor).isActive = true
+        collectionView.trailingAnchor.constraint(equalTo: guide.trailingAnchor).isActive = true
+        collectionView.bottomAnchor.constraint(equalTo: guide.bottomAnchor).isActive = true
+    }
+    fileprivate func setupInputComponents() {
         let containerView = UIView()
         containerView.translatesAutoresizingMaskIntoConstraints = false
         containerView.backgroundColor = .white
         
         view.addSubview(containerView)
         // need x, y, w, h
-        containerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
-        containerView.widthAnchor.constraint(equalTo: view.safeAreaLayoutGuide.widthAnchor).isActive = true
+        containerView.leadingAnchor.constraint(equalTo: collectionView.leadingAnchor).isActive = true
+        containerView.widthAnchor.constraint(equalTo: collectionView.widthAnchor).isActive = true
         containerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor)
         containerViewBottomAnchor?.isActive = true
         
         let uploadImageView = UIImageView()
@@ -224,7 +236,7 @@ class ChatLogController: UICollectionViewController {
     }
 }
 
-// MARK:- Extension regarding collectionView
+// MARK:- Regarding collectionView methods
 extension ChatLogController: UICollectionViewDelegateFlowLayout {
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return messages.count
@@ -241,7 +253,10 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         
         if let text = message.text {
             cell.bubbleWidthAnchor?.constant = estimatedFrame(for: text).width + 32
+        } else if message.imageUrl != nil {
+            cell.bubbleWidthAnchor?.constant = 200
         }
+        
         return cell
     }
     
@@ -275,9 +290,19 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
         var height: CGFloat = 80
+        
+        let message = messages[indexPath.item]
         if let text = messages[indexPath.item].text {
             height = estimatedFrame(for: text).height + 20
+        } else if
+            let imageWidth = message.imageWidth,
+            let imageHeight = message.imageHeight {
+            
+            // get h1 by equal ratio
+            // h1 = h2 / w2 * w1
+            height = CGFloat(imageHeight / imageWidth * 200)
         }
         let width = view.safeAreaLayoutGuide.layoutFrame.width
         return CGSize(width: width, height: height)
@@ -285,10 +310,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
     
     private func estimatedFrame(for text: String) -> CGRect {
         let size = CGSize(width: 200, height: 1000)
-        return NSString(string: text).boundingRect(with: size,
-                                                   options: .usesLineFragmentOrigin,
-                                                   attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)],
-                                                   context: nil)
+        return NSString(string: text).boundingRect(with: size, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)], context: nil)
     }
 }
 
@@ -347,12 +369,12 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
                     return
                 }
                 guard let imageUrl = url?.absoluteString else { return }
-                self.sendMessage(with: imageUrl)
+                self.sendMessage(with: imageUrl, image)
             })
         }
     }
     
-    private func sendMessage(with imageUrl: String) {
+    private func sendMessage(with imageUrl: String, _ image: UIImage) {
         let messagesRef = Database.database().reference().child("messages").childByAutoId()
         guard
             let toId = partner?.id,
@@ -363,8 +385,8 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
             "fromId" : fromId,
             "timestamp" : timestamp,
             "imageUrl" : imageUrl,
-            "imageWidth" : 0,
-            "imageHeight" : 0
+            "imageWidth" : image.size.width,
+            "imageHeight" : image.size.height
             ] as [String : Any]
         
         messagesRef.updateChildValues(values) { [weak self] (error, ref) in
