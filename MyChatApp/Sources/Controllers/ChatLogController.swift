@@ -27,7 +27,7 @@ class ChatLogController: UICollectionViewController {
     var messages: [Message] = []
     
     // MARK:- ChatLog Screen properties
-    var containerViewBottomAnchor: NSLayoutConstraint?
+    var collectionViewBottomAnchor: NSLayoutConstraint?
     
     lazy var inputTextField: UITextField = {
         let tf = UITextField()
@@ -45,6 +45,11 @@ class ChatLogController: UICollectionViewController {
         setupCollectionView()
         
         setupInputComponents()
+        
+        // Add gesture
+        let tapGesture = UITapGestureRecognizer()
+        tapGesture.delegate = self
+        view.addGestureRecognizer(tapGesture)
         
         let nc = NotificationCenter.default
         nc.addObserver(self,
@@ -92,8 +97,10 @@ class ChatLogController: UICollectionViewController {
 //                 #warning("need to optimize ..") // -- > Success!
 //                print(" ## \(message.text ?? "Something is wrong with message.text")")
                 self.messages.append(message)
-                DispatchQueue.main.async { [weak self] in
-                    self?.collectionView.reloadData()
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
+                    let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
+                    self.collectionView.scrollToItem(at: indexPath, at: UICollectionView.ScrollPosition.bottom, animated: true)
                 }
             })
         }
@@ -175,7 +182,7 @@ class ChatLogController: UICollectionViewController {
                        delay: 0.0,
                        options: animationOption,
                        animations: {
-                        self.containerViewBottomAnchor?.constant = -keyboardHeight
+                        self.collectionViewBottomAnchor?.constant = -keyboardHeight
                         self.view.layoutIfNeeded()
         }, completion: nil)
     }
@@ -193,7 +200,8 @@ class ChatLogController: UICollectionViewController {
         collectionView.leadingAnchor.constraint(equalTo: guide.leadingAnchor).isActive = true
         collectionView.topAnchor.constraint(equalTo: guide.topAnchor).isActive = true
         collectionView.trailingAnchor.constraint(equalTo: guide.trailingAnchor).isActive = true
-        collectionView.bottomAnchor.constraint(equalTo: guide.bottomAnchor).isActive = true
+        collectionViewBottomAnchor = collectionView.bottomAnchor.constraint(equalTo: guide.bottomAnchor)
+        collectionViewBottomAnchor?.isActive = true
     }
     fileprivate func setupInputComponents() {
         let containerView = UIView()
@@ -205,8 +213,7 @@ class ChatLogController: UICollectionViewController {
         containerView.leadingAnchor.constraint(equalTo: collectionView.leadingAnchor).isActive = true
         containerView.widthAnchor.constraint(equalTo: collectionView.widthAnchor).isActive = true
         containerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor)
-        containerViewBottomAnchor?.isActive = true
+        containerView.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor).isActive = true
         
         let uploadImageView = UIImageView()
         uploadImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -389,6 +396,14 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
                 self.sendMessage(with: imageUrl, image)
             })
         }
+    }
+}
+
+// MARK:- Regarding Gesture Recognizer in order to resign keyboard
+extension ChatLogController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        self.view.endEditing(true)
+        return true
     }
 }
 
