@@ -71,7 +71,7 @@ class ChatLogController: UICollectionViewController {
         print("ChatLog Controller \(#function)")
     }
     
-    // MARK:- Event Methods
+    // MARK:- Observe messages that has been changed
     func observeMessages() {
         guard
             let uid = Auth.auth().currentUser?.uid,
@@ -99,21 +99,37 @@ class ChatLogController: UICollectionViewController {
         }
     }
     
+    // MARK:- Regarding sending message including images
     @objc private func handleSendMessage() {
+        guard let text = self.inputTextField.text else { return }
+        let properties = ["text" : text]
+        sendMessage(with: properties)
+    }
+    
+    private func sendMessage(with imageUrl: String, _ image: UIImage) {
+        let properties: [String : Any] = [
+            "imageUrl" : imageUrl,
+            "imageWidth" : image.size.width,
+            "imageHeight" : image.size.height
+        ]
+        sendMessage(with: properties)
+    }
+    
+    private func sendMessage(with properties: [String : Any]) {
         let messagesRef = Database.database().reference().child("messages").childByAutoId()
         guard
-            let text = inputTextField.text,
             let toId = partner?.id,
-            let fromId = Auth.auth().currentUser?.uid else {
-                return
-        }
+            let fromId = Auth.auth().currentUser?.uid else { return }
         let timestamp = Date().timeIntervalSince1970
-        let values = [
+        var values: [String : Any] = [
             "toId" : toId,
             "fromId" : fromId,
-            "timestamp" : timestamp,
-            "text" : text
-            ] as [String : Any]
+            "timestamp" : timestamp
+        ]
+        
+        properties.forEach {
+            values[$0] = $1
+        }
         
         messagesRef.updateChildValues(values) { [weak self] (error, ref) in
             if let error = error {
@@ -131,7 +147,17 @@ class ChatLogController: UICollectionViewController {
             self?.inputTextField.resignFirstResponder()
         }
     }
+    
+    @objc fileprivate func handleUploadTap() {
+        let imagePicker = UIImagePickerController()
+        
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = true
+        
+        present(imagePicker, animated: true, completion: nil)
+    }
 
+    // MARK:- Regarding notification center
     @objc func handleKeyboardAppear(_ notification: Notification) {
         guard
             let userInfo = notification.userInfo,
@@ -154,16 +180,7 @@ class ChatLogController: UICollectionViewController {
         }, completion: nil)
     }
     
-    @objc fileprivate func handleUploadTap() {
-        let imagePicker = UIImagePickerController()
-        
-        imagePicker.delegate = self
-        imagePicker.allowsEditing = true
-        
-        present(imagePicker, animated: true, completion: nil)
-    }
-    
-    // MARK:- Setting up layouts methods
+    // MARK:- Regarding Setting views and Auto-layout methods
     fileprivate func setupCollectionView() {
         let guide = view.safeAreaLayoutGuide
         collectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -371,38 +388,6 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
                 guard let imageUrl = url?.absoluteString else { return }
                 self.sendMessage(with: imageUrl, image)
             })
-        }
-    }
-    
-    private func sendMessage(with imageUrl: String, _ image: UIImage) {
-        let messagesRef = Database.database().reference().child("messages").childByAutoId()
-        guard
-            let toId = partner?.id,
-            let fromId = Auth.auth().currentUser?.uid else { return }
-        let timestamp = Date().timeIntervalSince1970
-        let values = [
-            "toId" : toId,
-            "fromId" : fromId,
-            "timestamp" : timestamp,
-            "imageUrl" : imageUrl,
-            "imageWidth" : image.size.width,
-            "imageHeight" : image.size.height
-            ] as [String : Any]
-        
-        messagesRef.updateChildValues(values) { [weak self] (error, ref) in
-            if let error = error {
-                print("@@ messagesRef: \(error.localizedDescription)")
-            }
-            self?.inputTextField.text = nil
-            guard let messageId = messagesRef.key else { return }
-            
-            let userMessagesRef = Database.database().reference().child("user-messages").child(fromId).child(toId)
-            userMessagesRef.updateChildValues([messageId: 1])
-            // Counter part
-            let recipientUserMessagesRef = Database.database().reference().child("user-messages").child(toId).child(fromId)
-            recipientUserMessagesRef.updateChildValues([messageId: 1])
-            
-            self?.inputTextField.resignFirstResponder()
         }
     }
 }
