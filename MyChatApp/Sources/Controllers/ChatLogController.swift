@@ -8,6 +8,8 @@
 
 import UIKit
 import Firebase
+import FirebaseAuth
+import FirebaseStorage
 
 class ChatLogController: UICollectionViewController {
     
@@ -27,7 +29,7 @@ class ChatLogController: UICollectionViewController {
     var messages: [Message] = []
     
     // MARK:- ChatLog Screen properties
-    var collectionViewBottomAnchor: NSLayoutConstraint?
+    fileprivate var collectionViewBottomAnchor: NSLayoutConstraint?
     
     lazy var inputTextField: UITextField = {
         let tf = UITextField()
@@ -40,16 +42,12 @@ class ChatLogController: UICollectionViewController {
     // MARK:- Life Cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
-        
-        setupCollectionView()
-        
-        setupInputComponents()
+        view.backgroundColor = .red
         
         // Add gesture
         let tapGesture = UITapGestureRecognizer()
         tapGesture.delegate = self
-        view.addGestureRecognizer(tapGesture)
+        collectionView.addGestureRecognizer(tapGesture)
         
         let nc = NotificationCenter.default
         nc.addObserver(self,
@@ -60,6 +58,10 @@ class ChatLogController: UICollectionViewController {
                        selector: #selector(handleKeyboardAppear(_:)),
                        name: UIResponder.keyboardWillHideNotification,
                        object: nil)
+        
+        setupCollectionView()
+        
+        setupInputComponents()
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -84,8 +86,7 @@ class ChatLogController: UICollectionViewController {
                 return
         }
         let userMessagesRef = Database.database().reference().child("user-messages").child(uid).child(selectedId)
-        userMessagesRef.observe(.childAdded) { (snapshot) in
-            
+        userMessagesRef.observe(.childAdded) { [weak self] (snapshot) in
             let messageId = snapshot.key
             let messagesRef = Database.database().reference().child("messages").child(messageId)
             messagesRef.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
@@ -175,24 +176,28 @@ class ChatLogController: UICollectionViewController {
         }
         let isKeyboardWillShow: Bool = notification.name == UIResponder.keyboardWillShowNotification
         let safeAreaBottomHeight = view.safeAreaInsets.bottom
-        let keyboardHeight = isKeyboardWillShow ? keyboardFrame.cgRectValue.height - safeAreaBottomHeight : 0
+        let keyboardHeight = isKeyboardWillShow
+            ? keyboardFrame.cgRectValue.height - safeAreaBottomHeight
+            : 0
         let animationOption = UIView.AnimationOptions.init(rawValue: curve)
         
-        UIView.animate(withDuration: duration,
-                       delay: 0.0,
-                       options: animationOption,
-                       animations: {
-                        self.collectionViewBottomAnchor?.constant = -keyboardHeight
-                        self.view.layoutIfNeeded()
-        }, completion: nil)
+        UIView.animate(
+            withDuration: duration,
+            delay: 0.0,
+            options: animationOption,
+            animations: {
+                self.collectionViewBottomAnchor?.constant = -keyboardHeight
+                self.view.layoutIfNeeded()
+        },
+            completion: nil)
     }
     
     // MARK:- Regarding Setting views and Auto-layout methods
     fileprivate func setupCollectionView() {
         let guide = view.safeAreaLayoutGuide
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.backgroundColor = .white
-        collectionView.alwaysBounceVertical = true  // Draggable..
+        collectionView.backgroundColor = .green
+        collectionView.alwaysBounceVertical = true  // Draggable
         collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
         collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         collectionView.register(ChatMessageCell.self, forCellWithReuseIdentifier: cellId)
@@ -381,7 +386,7 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
             return
         }
         
-        storageRef.putData(uploadData, metadata: nil) { (metadata, error) in
+        storageRef.putData(uploadData, metadata: nil) { [weak self] (metadata, error) in
             if let error = error {
                 print("@@ Message image upload error: \(error.localizedDescription)")
                 return
@@ -393,7 +398,7 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
                     return
                 }
                 guard let imageUrl = url?.absoluteString else { return }
-                self.sendMessage(with: imageUrl, image)
+                self?.sendMessage(with: imageUrl, image)
             })
         }
     }
