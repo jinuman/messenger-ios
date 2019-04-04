@@ -7,7 +7,9 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
+import FirebaseStorage
 
 // Handling about Register.
 extension LoginController {

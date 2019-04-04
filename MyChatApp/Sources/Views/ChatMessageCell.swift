@@ -42,6 +42,7 @@ class ChatMessageCell: UICollectionViewCell {
     var bubbleWidthAnchor: NSLayoutConstraint?
     var bubbleTrailingAnchor: NSLayoutConstraint?
     var bubbleLeadingAnchor: NSLayoutConstraint?
+    var profileWidth: NSLayoutConstraint?
     
     let textView: UITextView = {
         let tv = UITextView()
@@ -60,16 +61,18 @@ class ChatMessageCell: UICollectionViewCell {
         }
         bubbleView.addSubview(messageImageView)
         
+        
         // need x, y, w, h
+        // set width anchor inside ChatLogController
         profileImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
         profileImageView.centerYAnchor.constraint(equalTo: bubbleView.centerYAnchor).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 32).isActive = true
+        profileWidth = profileImageView.widthAnchor.constraint(equalToConstant: 32)
         profileImageView.heightAnchor.constraint(equalTo: profileImageView.widthAnchor).isActive = true
         
         // need x, y, w, h
-        // set this Anchor inside ChatLogController
-        bubbleTrailingAnchor = bubbleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8)
+        // set leading and trailing anchor inside ChatLogController
         bubbleLeadingAnchor = bubbleView.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8)
+        bubbleTrailingAnchor = bubbleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8)
         
         bubbleView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
         bubbleWidthAnchor = bubbleView.widthAnchor.constraint(equalToConstant: 200)

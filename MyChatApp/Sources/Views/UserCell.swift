@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
 
 // MARK:- Using in NewMessageController, MessagesController 
 class UserCell: UITableViewCell {

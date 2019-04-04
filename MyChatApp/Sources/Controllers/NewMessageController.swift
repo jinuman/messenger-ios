@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
 
 // Show new message view in terms of sending messages
 class NewMessageController: UITableViewController {

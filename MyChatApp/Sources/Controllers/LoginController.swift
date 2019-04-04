@@ -7,7 +7,8 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseDatabase
+import FirebaseAuth
 
 // Show Login & Register view
 class LoginController: UIViewController {

@@ -7,7 +7,8 @@
 //
 
 import UIKit
-import Firebase
+import FirebaseAuth
+import FirebaseDatabase
 
 protocol MessagesControllerDelegate: class {
     //    func setupNavBarWithUser(user: User)

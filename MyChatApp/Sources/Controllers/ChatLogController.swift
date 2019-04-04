@@ -7,9 +7,9 @@
 //
 
 import UIKit
-import Firebase
 import FirebaseAuth
 import FirebaseStorage
+import FirebaseDatabase
 
 class ChatLogController: UICollectionViewController {
     
@@ -18,10 +18,6 @@ class ChatLogController: UICollectionViewController {
     // User's partner
     var partner: User? {
         didSet {
-            guard let partner = partner else {
-                return
-            }
-            navigationItem.title = partner.name
             observeMessages()
         }
     }
@@ -42,7 +38,9 @@ class ChatLogController: UICollectionViewController {
     // MARK:- Life Cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .red
+        view.backgroundColor = .white
+        
+        navigationItem.title = partner?.name
         
         // Add gesture
         let tapGesture = UITapGestureRecognizer()
@@ -196,7 +194,7 @@ class ChatLogController: UICollectionViewController {
     fileprivate func setupCollectionView() {
         let guide = view.safeAreaLayoutGuide
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.backgroundColor = .green
+        collectionView.backgroundColor = .white
         collectionView.alwaysBounceVertical = true  // Draggable
         collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
         collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
@@ -298,6 +296,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
             cell.bubbleView.backgroundColor = ChatMessageCell.bubbleBlue
             cell.textView.textColor = .white
             cell.profileImageView.isHidden = true
+            cell.profileWidth?.isActive = false
             cell.bubbleTrailingAnchor?.isActive = true
             cell.bubbleLeadingAnchor?.isActive = false
         } else {
@@ -305,6 +304,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
             cell.bubbleView.backgroundColor = UIColor(r: 240, g: 240, b: 240)
             cell.textView.textColor = .black
             cell.profileImageView.isHidden = false
+            cell.profileWidth?.isActive = true
             cell.bubbleTrailingAnchor?.isActive = false
             cell.bubbleLeadingAnchor?.isActive = true
         }
@@ -333,7 +333,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
             // h1 = h2 / w2 * w1
             height = CGFloat(imageHeight / imageWidth * 200)
         }
-        let width = view.safeAreaLayoutGuide.layoutFrame.width
+        let width = view.frame.width
         return CGSize(width: width, height: height)
     }
     
