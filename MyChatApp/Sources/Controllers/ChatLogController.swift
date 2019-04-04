@@ -25,7 +25,7 @@ class ChatLogController: UICollectionViewController {
     var messages: [Message] = []
     
     // MARK:- ChatLog Screen properties
-    fileprivate var collectionViewBottomAnchor: NSLayoutConstraint?
+    fileprivate var containerViewBottomAnchor: NSLayoutConstraint?
     
     lazy var inputTextField: UITextField = {
         let tf = UITextField()
@@ -47,15 +47,7 @@ class ChatLogController: UICollectionViewController {
         tapGesture.delegate = self
         collectionView.addGestureRecognizer(tapGesture)
         
-        let nc = NotificationCenter.default
-        nc.addObserver(self,
-                       selector: #selector(handleKeyboardAppear(_:)),
-                       name: UIResponder.keyboardWillShowNotification,
-                       object: nil)
-        nc.addObserver(self,
-                       selector: #selector(handleKeyboardAppear(_:)),
-                       name: UIResponder.keyboardWillHideNotification,
-                       object: nil)
+        setupKeyboardObservers()
         
         setupCollectionView()
         
@@ -74,6 +66,53 @@ class ChatLogController: UICollectionViewController {
     
     deinit {
         print("ChatLog Controller \(#function)")
+    }
+    
+    // MARK:- Notification Center
+    fileprivate func setupKeyboardObservers() {
+        let nc = NotificationCenter.default
+        
+        nc.addObserver(self, selector: #selector(handleKeyboardWillAppear(_:)),
+                       name: UIResponder.keyboardWillShowNotification, object: nil)
+        
+        nc.addObserver(self, selector: #selector(handleKeyboardWillAppear(_:)),
+                       name: UIResponder.keyboardWillHideNotification, object: nil)
+        
+        nc.addObserver(self, selector: #selector(handleKeyboardDidShow),
+                       name: UIResponder.keyboardDidShowNotification, object: nil)
+    }
+    
+    @objc fileprivate func handleKeyboardWillAppear(_ notification: Notification) {
+        guard
+            let userInfo = notification.userInfo,
+            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
+            let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval,
+            let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else {
+                return
+        }
+        let isKeyboardWillShow: Bool = notification.name == UIResponder.keyboardWillShowNotification
+        let safeAreaBottomHeight = view.safeAreaInsets.bottom
+        let keyboardHeight = isKeyboardWillShow
+            ? keyboardFrame.cgRectValue.height - safeAreaBottomHeight
+            : 0
+        let animationOption = UIView.AnimationOptions.init(rawValue: curve)
+        
+        UIView.animate(
+            withDuration: duration,
+            delay: 0.0,
+            options: animationOption,
+            animations: {
+                self.containerViewBottomAnchor?.constant = -keyboardHeight
+                self.view.layoutIfNeeded()
+        },
+            completion: nil)
+    }
+    
+    @objc fileprivate func handleKeyboardDidShow() {
+        if messages.isEmpty == false {
+            let indexPath = IndexPath(item: messages.count - 1, section: 0)
+            collectionView?.scrollToItem(at: indexPath, at: UICollectionView.ScrollPosition.top, animated: true)
+        }
     }
     
     // MARK:- Observe messages that has been changed
@@ -162,33 +201,6 @@ class ChatLogController: UICollectionViewController {
         
         present(imagePicker, animated: true, completion: nil)
     }
-
-    // MARK:- Regarding notification center
-    @objc func handleKeyboardAppear(_ notification: Notification) {
-        guard
-            let userInfo = notification.userInfo,
-            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
-            let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval,
-            let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else {
-                return
-        }
-        let isKeyboardWillShow: Bool = notification.name == UIResponder.keyboardWillShowNotification
-        let safeAreaBottomHeight = view.safeAreaInsets.bottom
-        let keyboardHeight = isKeyboardWillShow
-            ? keyboardFrame.cgRectValue.height - safeAreaBottomHeight
-            : 0
-        let animationOption = UIView.AnimationOptions.init(rawValue: curve)
-        
-        UIView.animate(
-            withDuration: duration,
-            delay: 0.0,
-            options: animationOption,
-            animations: {
-                self.collectionViewBottomAnchor?.constant = -keyboardHeight
-                self.view.layoutIfNeeded()
-        },
-            completion: nil)
-    }
     
     // MARK:- Regarding Setting views and Auto-layout methods
     fileprivate func setupCollectionView() {
@@ -203,8 +215,7 @@ class ChatLogController: UICollectionViewController {
         collectionView.leadingAnchor.constraint(equalTo: guide.leadingAnchor).isActive = true
         collectionView.topAnchor.constraint(equalTo: guide.topAnchor).isActive = true
         collectionView.trailingAnchor.constraint(equalTo: guide.trailingAnchor).isActive = true
-        collectionViewBottomAnchor = collectionView.bottomAnchor.constraint(equalTo: guide.bottomAnchor)
-        collectionViewBottomAnchor?.isActive = true
+        collectionView.bottomAnchor.constraint(equalTo: guide.bottomAnchor).isActive = true
     }
     fileprivate func setupInputComponents() {
         let containerView = UIView()
@@ -216,7 +227,8 @@ class ChatLogController: UICollectionViewController {
         containerView.leadingAnchor.constraint(equalTo: collectionView.leadingAnchor).isActive = true
         containerView.widthAnchor.constraint(equalTo: collectionView.widthAnchor).isActive = true
         containerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        containerView.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor).isActive = true
+        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor)
+        containerViewBottomAnchor?.isActive = true
         
         let uploadImageView = UIImageView()
         uploadImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -274,7 +286,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
             fatalError("Chat Log cell is bad.")
         }
         let message = messages[indexPath.item]
-        cell.textView.text = message.text
+        cell.messageTextView.text = message.text
         
         setupCell(cell: cell, message: message)
         
@@ -294,7 +306,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         if message.fromId == Auth.auth().currentUser?.uid {
             // outgoing blue bubble
             cell.bubbleView.backgroundColor = ChatMessageCell.bubbleBlue
-            cell.textView.textColor = .white
+            cell.messageTextView.textColor = .white
             cell.profileImageView.isHidden = true
             cell.profileWidth?.isActive = false
             cell.bubbleTrailingAnchor?.isActive = true
@@ -302,7 +314,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         } else {
             // incoming lightGray bubble
             cell.bubbleView.backgroundColor = UIColor(r: 240, g: 240, b: 240)
-            cell.textView.textColor = .black
+            cell.messageTextView.textColor = .black
             cell.profileImageView.isHidden = false
             cell.profileWidth?.isActive = true
             cell.bubbleTrailingAnchor?.isActive = false

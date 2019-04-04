@@ -44,19 +44,20 @@ class ChatMessageCell: UICollectionViewCell {
     var bubbleLeadingAnchor: NSLayoutConstraint?
     var profileWidth: NSLayoutConstraint?
     
-    let textView: UITextView = {
+    let messageTextView: UITextView = {
         let tv = UITextView()
         tv.translatesAutoresizingMaskIntoConstraints = false
         tv.backgroundColor = .clear
         tv.textColor = .white
         tv.font = UIFont.systemFont(ofSize: 16)
         tv.isUserInteractionEnabled = false
+        tv.isEditable = false
         return tv
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        [profileImageView, bubbleView, textView].forEach {
+        [profileImageView, bubbleView, messageTextView].forEach {
             addSubview($0)
         }
         bubbleView.addSubview(messageImageView)
@@ -80,10 +81,10 @@ class ChatMessageCell: UICollectionViewCell {
         bubbleView.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
         
         // need x, y, w, h
-        textView.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 8).isActive = true
-        textView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
-        textView.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -8).isActive = true
-        textView.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
+        messageTextView.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 8).isActive = true
+        messageTextView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
+        messageTextView.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -8).isActive = true
+        messageTextView.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
         
         // x, y, w, h
         messageImageView.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor).isActive = true
