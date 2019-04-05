@@ -43,6 +43,21 @@ class MessagesController: UITableViewController {
                                                             target: self, action: #selector(handleNewMessage))
         
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        appDelegate.enableAllOrientation = true
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        appDelegate.enableAllOrientation = false
+        
+        let value = UIInterfaceOrientation.portrait.rawValue
+        UIDevice.current.setValue(value, forKey: "orientation")
+    }
 
     // MARK:- Handling methods
     private func checkUserIsLoggedIn() {
