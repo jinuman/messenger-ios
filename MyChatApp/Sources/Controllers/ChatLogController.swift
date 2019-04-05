@@ -25,7 +25,18 @@ class ChatLogController: UICollectionViewController {
     var messages: [Message] = []
     
     // MARK:- ChatLog Screen properties
-    fileprivate var containerViewBottomAnchor: NSLayoutConstraint?
+    fileprivate var inputContainerViewBottomAnchor: NSLayoutConstraint?
+    
+    fileprivate var startingFrame: CGRect?
+    fileprivate var blackBackgroundView: UIView?
+    fileprivate var startingImageView: UIImageView?
+    
+    let inputContainerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .white
+        return view
+    }()
     
     lazy var inputTextField: UITextField = {
         let tf = UITextField()
@@ -102,10 +113,11 @@ class ChatLogController: UICollectionViewController {
             delay: 0.0,
             options: animationOption,
             animations: {
-                self.containerViewBottomAnchor?.constant = -keyboardHeight
+                
+                self.inputContainerViewBottomAnchor?.constant = -keyboardHeight
                 self.view.layoutIfNeeded()
-        },
-            completion: nil)
+                
+        }, completion: nil)
     }
     
     @objc fileprivate func handleKeyboardDidShow() {
@@ -218,17 +230,13 @@ class ChatLogController: UICollectionViewController {
         collectionView.bottomAnchor.constraint(equalTo: guide.bottomAnchor).isActive = true
     }
     fileprivate func setupInputComponents() {
-        let containerView = UIView()
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        containerView.backgroundColor = .white
-        
-        view.addSubview(containerView)
+        view.addSubview(inputContainerView)
         // need x, y, w, h
-        containerView.leadingAnchor.constraint(equalTo: collectionView.leadingAnchor).isActive = true
-        containerView.widthAnchor.constraint(equalTo: collectionView.widthAnchor).isActive = true
-        containerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        containerViewBottomAnchor = containerView.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor)
-        containerViewBottomAnchor?.isActive = true
+        inputContainerView.leadingAnchor.constraint(equalTo: collectionView.leadingAnchor).isActive = true
+        inputContainerView.widthAnchor.constraint(equalTo: collectionView.widthAnchor).isActive = true
+        inputContainerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        inputContainerViewBottomAnchor = inputContainerView.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor)
+        inputContainerViewBottomAnchor?.isActive = true
         
         let uploadImageView = UIImageView()
         uploadImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -247,30 +255,30 @@ class ChatLogController: UICollectionViewController {
         separatorLineView.backgroundColor = UIColor(r: 220, g: 220, b: 220)
         
         [uploadImageView, inputTextField, sendButton, separatorLineView].forEach {
-            containerView.addSubview($0)
+            inputContainerView.addSubview($0)
         }
         // need x, y, w, h
-        uploadImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
-        uploadImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        uploadImageView.leadingAnchor.constraint(equalTo: inputContainerView.leadingAnchor).isActive = true
+        uploadImageView.centerYAnchor.constraint(equalTo: inputContainerView.centerYAnchor).isActive = true
         uploadImageView.widthAnchor.constraint(equalToConstant: 44).isActive = true
         uploadImageView.heightAnchor.constraint(equalToConstant: 44).isActive = true
         
         // need x, y, w, h
         inputTextField.leadingAnchor.constraint(equalTo: uploadImageView.trailingAnchor, constant: 8).isActive = true
-        inputTextField.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        inputTextField.centerYAnchor.constraint(equalTo: inputContainerView.centerYAnchor).isActive = true
         inputTextField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor).isActive = true
-        inputTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor).isActive = true
+        inputTextField.heightAnchor.constraint(equalTo: inputContainerView.heightAnchor).isActive = true
         
         // need x, y, w, h
-        sendButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor).isActive = true
-        sendButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
+        sendButton.trailingAnchor.constraint(equalTo: inputContainerView.trailingAnchor).isActive = true
+        sendButton.centerYAnchor.constraint(equalTo: inputContainerView.centerYAnchor).isActive = true
         sendButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
-        sendButton.heightAnchor.constraint(equalTo: containerView.heightAnchor).isActive = true
+        sendButton.heightAnchor.constraint(equalTo: inputContainerView.heightAnchor).isActive = true
         
         // need x, y, w, h
-        separatorLineView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor).isActive = true
-        separatorLineView.topAnchor.constraint(equalTo: containerView.topAnchor).isActive = true
-        separatorLineView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
+        separatorLineView.leadingAnchor.constraint(equalTo: inputContainerView.leadingAnchor).isActive = true
+        separatorLineView.topAnchor.constraint(equalTo: inputContainerView.topAnchor).isActive = true
+        separatorLineView.widthAnchor.constraint(equalTo: inputContainerView.widthAnchor).isActive = true
         separatorLineView.heightAnchor.constraint(equalToConstant: 1).isActive = true
     }
 }
@@ -285,6 +293,10 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as? ChatMessageCell else {
             fatalError("Chat Log cell is bad.")
         }
+        
+        #warning("나중에 delegate 로 바꿀것")
+        cell.chatLogController = self
+        
         let message = messages[indexPath.item]
         cell.messageTextView.text = message.text
         
@@ -292,11 +304,85 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         
         if let text = message.text {
             cell.bubbleWidthAnchor?.constant = estimatedFrame(for: text).width + 32
+            cell.messageTextView.isHidden = false
         } else if message.imageUrl != nil {
             cell.bubbleWidthAnchor?.constant = 200
+            cell.messageTextView.isHidden = true
         }
         
         return cell
+    }
+    
+    
+    
+    // MARK:- Custom zooming logic
+    func performZoomIn(for startingImageView: UIImageView) {
+        self.startingImageView = startingImageView
+        // 이미지 bumping 현상 방지
+        self.startingImageView?.isHidden = true
+        
+        startingFrame = startingImageView.superview?.convert(startingImageView.frame, to: nil)
+        guard let startingFrame = startingFrame else { return }
+        
+        let zoomingImageView = UIImageView(frame: startingFrame)
+        zoomingImageView.image = startingImageView.image
+        zoomingImageView.isUserInteractionEnabled = true
+        zoomingImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleZoomOut(_:))))
+        
+        guard let keyWindow = UIApplication.shared.keyWindow else { return }
+        blackBackgroundView = UIView(frame: keyWindow.frame)
+        guard let blackBackgroundView = blackBackgroundView else { return }
+        blackBackgroundView.backgroundColor = .black
+        blackBackgroundView.alpha = 0
+        
+        [blackBackgroundView, zoomingImageView].forEach {
+            keyWindow.addSubview($0)
+        }
+        
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0,
+            usingSpringWithDamping: 1,
+            initialSpringVelocity: 1,
+            options: .curveEaseOut,
+            animations: {
+                
+                blackBackgroundView.alpha = 1
+                self.inputContainerView.alpha = 0
+                
+                // scale math
+                // h2 = h1 / w1 * w2
+                let height = startingFrame.height / startingFrame.width * keyWindow.frame.width
+                
+                zoomingImageView.frame = CGRect(x: 0, y: 0, width: keyWindow.frame.width, height: height)
+                zoomingImageView.center = keyWindow.center
+                
+        }, completion: nil)
+    }
+    
+    @objc func handleZoomOut(_ tapGesture: UITapGestureRecognizer) {
+        guard let zoomOutImageView = tapGesture.view else { return }
+        // cornerRadius issue 해결
+        zoomOutImageView.layer.cornerRadius = 16
+        zoomOutImageView.clipsToBounds = true
+        
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0,
+            usingSpringWithDamping: 1,
+            initialSpringVelocity: 1,
+            options: .curveEaseOut,
+            animations: {
+                
+                guard let startingFrame = self.startingFrame else { return }
+                zoomOutImageView.frame = startingFrame
+                self.blackBackgroundView?.alpha = 0
+                self.inputContainerView.alpha = 1
+                
+        }) { (completed: Bool) in
+            zoomOutImageView.removeFromSuperview()
+            self.startingImageView?.isHidden = false
+        }
     }
     
     func setupCell(cell: ChatMessageCell, message: Message) {

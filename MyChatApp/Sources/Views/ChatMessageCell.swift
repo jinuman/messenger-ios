@@ -10,6 +10,8 @@ import UIKit
 
 class ChatMessageCell: UICollectionViewCell {
     
+    weak var chatLogController: ChatLogController?
+    
     static let bubbleBlue = UIColor(r: 0, g: 137, b: 249)
     
     let profileImageView: UIImageView = {
@@ -21,12 +23,14 @@ class ChatMessageCell: UICollectionViewCell {
         return iv
     }()
     
-    let messageImageView: UIImageView = {
+    lazy var messageImageView: UIImageView = {
         let iv = UIImageView()
         iv.translatesAutoresizingMaskIntoConstraints = false
         iv.layer.cornerRadius = 16
         iv.layer.masksToBounds = true
         iv.contentMode = .scaleAspectFill
+        iv.isUserInteractionEnabled = true
+        iv.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleZoomTap(_:))))
         return iv
     }()
     
@@ -62,7 +66,6 @@ class ChatMessageCell: UICollectionViewCell {
         }
         bubbleView.addSubview(messageImageView)
         
-        
         // need x, y, w, h
         // set width anchor inside ChatLogController
         profileImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
@@ -97,6 +100,12 @@ class ChatMessageCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK:- Handling methods
+    @objc fileprivate func handleZoomTap(_ tapGesture: UITapGestureRecognizer) {
+        // PRO tip: Don't perform a lot of custom logic inside of a view class
+        guard let imageView = tapGesture.view as? UIImageView else { return }
+        self.chatLogController?.performZoomIn(for: imageView)
+    }
     
 }
 
