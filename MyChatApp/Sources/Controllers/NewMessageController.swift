@@ -72,10 +72,10 @@ class NewMessageController: UITableViewController {
         cell.textLabel?.text = user.name
         cell.detailTextLabel?.text = user.email
         
-        guard let urlString = user.profileImageUrl else {
-            fatalError("url string is not proper..")
+        if let imageUrl = user.profileImageUrl {
+            cell.profileImageView.loadImageUsingCache(with: imageUrl)
         }
-        cell.profileImageView.loadImageUsingCache(with: urlString)
+        
         return cell
     }
     

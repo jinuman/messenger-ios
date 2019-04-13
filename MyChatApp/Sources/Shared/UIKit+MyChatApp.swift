@@ -11,17 +11,17 @@ import UIKit
 let imageCache = NSCache<NSString, AnyObject>()
 
 extension UIImageView {
-    func loadImageUsingCache(with urlString: String) {
+    func loadImageUsingCache(with imageUrlString: String) {
         self.image = nil
         
         // check cache for image first
-        if let cachedImage = imageCache.object(forKey: urlString as NSString) as? UIImage {
+        if let cachedImage = imageCache.object(forKey: imageUrlString as NSString) as? UIImage {
             self.image = cachedImage
             return
         }
         
         // otherwise fire off a new download
-        guard let url = URL(string: urlString) else {
+        guard let url = URL(string: imageUrlString) else {
             return
         }
         URLSession.shared.dataTask(with: url) { (data, response, error) in
@@ -36,7 +36,7 @@ extension UIImageView {
                 guard let downloadedImage = UIImage(data: data) else {
                     return
                 }
-                imageCache.setObject(downloadedImage, forKey: urlString as NSString)
+                imageCache.setObject(downloadedImage, forKey: imageUrlString as NSString)
                 self.image = downloadedImage
             }
         }.resume()
