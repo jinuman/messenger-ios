@@ -9,33 +9,30 @@
 import UIKit
 import FirebaseDatabase
 import FirebaseAuth
+import FirebaseStorage
 
 // Show Login & Register view
 class LoginController: UIViewController {
     
+    // MARK:- Properties
     let messagesController: MessagesController = {
         let vc = MessagesController()
         return vc
     }()
     
-    // MARK:- LoginControllerDelegate property
     weak var delegate: MessagesControllerDelegate?
 
-    // MARK:- View properties
-    lazy var profileImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image = #imageLiteral(resourceName: "gameofthrones_splash")
-        imageView.contentMode = .scaleAspectFill
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleSelectProfileImageView))
-        imageView.addGestureRecognizer(tapRecognizer)
-        
-        imageView.isUserInteractionEnabled = true
-        
-        return imageView
+    // MARK:- Screen properties
+    private let profileImageButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(#imageLiteral(resourceName: "plus_photo").withRenderingMode(.automatic), for: .normal)
+        button.tintColor = .white
+        button.addTarget(self, action: #selector(handleSelectProfileImage), for: .touchUpInside)
+        return button
     }()
     
-    private lazy var loginRegisterSegmentedControl: UISegmentedControl = {
+    private let loginRegisterSegmentedControl: UISegmentedControl = {
         let sc = UISegmentedControl(items: ["Login", "Register"])
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.tintColor = .white
@@ -92,7 +89,7 @@ class LoginController: UIViewController {
     lazy var loginRegisterButton: UIButton = {
         let button = UIButton(type: UIButton.ButtonType.system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.backgroundColor = UIColor(r: 80, g: 101, b: 161)
+        button.backgroundColor = .loginButtonColor
         button.setTitle("Register", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
@@ -111,14 +108,13 @@ class LoginController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor(r: 61, g: 91, b: 151)
+        view.backgroundColor = .bgColor
         
-        view.addSubview(profileImageView)
-        view.addSubview(loginRegisterSegmentedControl)
-        view.addSubview(inputsContainerView)
-        view.addSubview(loginRegisterButton)
+        [profileImageButton, loginRegisterSegmentedControl, inputsContainerView, loginRegisterButton].forEach {
+            view.addSubview($0)
+        }
         
-        setupProfileImageView()
+        setupProfileImageButton()
         setupLoginRegisterSegmentedControl()
         setupInputsContainerView()
         setupRegisterButton()
@@ -131,30 +127,33 @@ class LoginController: UIViewController {
     // MARK:- Event Handling methods
     @objc private func handleLoginRegisterChange() {
         let index = loginRegisterSegmentedControl.selectedSegmentIndex
+        let isLogin = index == 0
+        
         let title = loginRegisterSegmentedControl.titleForSegment(at: index)
         loginRegisterButton.setTitle(title, for: .normal)
+        profileImageButton.isHidden = isLogin ? true : false
         
         // Change height of inputsContainerView.
-        inputsContainerViewHeightAnchor?.constant = index == 0 ? 100 : 150
+        inputsContainerViewHeightAnchor?.constant = isLogin ? 100 : 150
         
         // Change height of name, email, password TextField
         nameTextFieldHeightAnchor?.isActive = false
         nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor,
-                                                                          multiplier: index == 0
+                                                                          multiplier: isLogin
                                                                             ? 0
                                                                             : 1/3)
         nameTextFieldHeightAnchor?.isActive = true
         
         emailTextFieldHeightAnchor?.isActive = false
         emailTextFieldHeightAnchor = emailTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor,
-                                                                            multiplier: index == 0
+                                                                            multiplier: isLogin
                                                                                 ? 1/2
                                                                                 : 1/3)
         emailTextFieldHeightAnchor?.isActive = true
         
         passwordTextFieldHeightAnchor?.isActive = false
         passwordTextFieldHeightAnchor = passwordTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor,
-                                                                                  multiplier: index == 0
+                                                                                  multiplier: isLogin
                                                                                     ? 1/2
                                                                                     : 1/3)
         passwordTextFieldHeightAnchor?.isActive = true
@@ -197,11 +196,11 @@ class LoginController: UIViewController {
     
     // MARK:- Setting up layout methods
     // Constraints need x, y, width, height
-    private func setupProfileImageView() {
-        profileImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        profileImageView.bottomAnchor.constraint(equalTo: loginRegisterSegmentedControl.topAnchor, constant: -12).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 150).isActive = true
-        profileImageView.heightAnchor.constraint(equalTo: profileImageView.widthAnchor, multiplier: 1).isActive = true
+    private func setupProfileImageButton() {
+        profileImageButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        profileImageButton.bottomAnchor.constraint(equalTo: loginRegisterSegmentedControl.topAnchor, constant: -12).isActive = true
+        profileImageButton.widthAnchor.constraint(equalToConstant: 150).isActive = true
+        profileImageButton.heightAnchor.constraint(equalTo: profileImageButton.widthAnchor, multiplier: 1).isActive = true
     }
     
     private func setupLoginRegisterSegmentedControl() {
@@ -260,3 +259,138 @@ class LoginController: UIViewController {
         loginRegisterButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
     }
 }
+
+// MARK:- Register 부분
+
+extension LoginController {
+    
+    // MARK:- Event handling methods
+    @objc func handleSelectProfileImage() {
+        let picker = UIImagePickerController()
+        picker.sourceType = .photoLibrary
+        picker.delegate = self
+        picker.allowsEditing = true
+        present(picker, animated: true, completion: nil)
+    }
+    
+    @objc func handleRegister() {
+        // Form check.
+        guard
+            let email = emailTextField.text,
+            let password = passwordTextField.text,
+            let name = nameTextField.text
+            else {
+                print("@@ Register email or password form is not valid..")
+                return
+        }
+        
+        // Now Form is correct..Then..create user
+        Auth.auth().createUser(withEmail: email, password: password) { [weak self](result: AuthDataResult?, error) in
+            guard let self = self else {
+                return
+            }
+            
+            if error != nil {
+                print("@@ createUser: \(error?.localizedDescription ?? "")")
+            }
+            
+            if result?.user != nil {
+                print("!! Auth user success !!")
+            }
+            
+            guard let uid = result?.user.uid else {
+                return
+            }
+            
+            // Successfully authenticated user.
+            let imageName = UUID().uuidString
+            
+            let storageRef = Storage.storage().reference().child("profile_images").child(imageName)
+            guard let uploadData = self.profileImageButton.imageView?.image?.jpegData(compressionQuality: 0.05) else {
+                return
+            }
+            // first upload images to storage..
+            storageRef.putData(uploadData, metadata: nil, completion: { [weak self] (metadata, error) in
+                if let error = error {
+                    print("@@ Profile image upload error: \(error.localizedDescription)")
+                    return
+                }
+                // url 생성
+                storageRef.downloadURL(completion: { (url, err) in
+                    if let err = err {
+                        print("@@ download url error: \(err.localizedDescription)")
+                        return
+                    }
+                    guard let imageUrl = url?.absoluteString else { return }
+                    // values 생성
+                    let values = [
+                        "profileImageUrl" : imageUrl,
+                        "name" : name,
+                        "email" : email
+                    ]
+                    self?.registerUserIntoDatabaseWithUid(uid: uid, values: values)
+                })
+            })
+        }
+    }
+    
+    fileprivate func registerUserIntoDatabaseWithUid(uid: String, values: [String: Any]) {
+        let usersRef = Database.database().reference().child("users").child(uid)
+        usersRef.updateChildValues(values, withCompletionBlock: { [weak self] (err, ref) in
+            guard
+                let self = self,
+                let name = values["name"] as? String else {
+                    return
+            }
+            if let err = err {
+                print("@@ Register -> updateChildValues: \(err.localizedDescription)")
+                return
+            } else {
+                print("!! Register Success !!")
+            }
+            // Should refresh main UI with current user.
+            
+            // Don't need full of this call..
+            //            self?.messagesController?.fetchUserAndSetupNavBarTitle()
+            // Instead
+            self.delegate?.setupNavBar(with: name)
+            //            self.messagesController.navigationItem.title = values["name"] as? String
+            //            guard let user = User(dictionary: values) else {
+            //                return
+            //            }
+            //            self.delegate?.setupNavBarWithUser(user: user)
+            
+            self.dismiss(animated: true, completion: nil)
+        })
+    }
+    
+}
+
+// MARK:- Extension regarding UIImagePickerControllerDelegate, UINavigationControllerDelegate
+extension LoginController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        var selectedImageFromPicker: UIImage?
+        
+        if let editedImage = info[.editedImage] as? UIImage {
+            selectedImageFromPicker = editedImage
+        } else if let originalImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
+            selectedImageFromPicker = originalImage
+        }
+        
+        guard let selectedImage = selectedImageFromPicker else { return }
+        
+        profileImageButton.setImage(selectedImage.withRenderingMode(.alwaysOriginal), for: .normal)
+        profileImageButton.imageView?.contentMode = .scaleAspectFill
+        profileImageButton.layer.cornerRadius = profileImageButton.frame.width / 2
+        profileImageButton.clipsToBounds = true
+        profileImageButton.layer.borderColor = UIColor.gray.cgColor
+        profileImageButton.layer.borderWidth = 1
+        
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
+    }
+}
+
