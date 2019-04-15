@@ -11,8 +11,6 @@ import FirebaseAuth
 import FirebaseDatabase
 
 protocol MessagesControllerDelegate: class {
-    //    func setupNavBarWithUser(user: User)
-    func setupNavBar(with name: String)
     func fetchUserAndSetupNavBarTitle()
     
     func showChatController(for user: User)
@@ -155,7 +153,7 @@ class MessagesController: UITableViewController {
         } catch let logoutError {
             print(logoutError)
         }
-        let loginController = LoginController()
+        let loginController = LoginRegisterController()
         loginController.delegate = self
         present(loginController, animated: true, completion: nil)
     }
@@ -229,10 +227,6 @@ extension MessagesController {
 
 // MARK:- MessagesController delegate methods
 extension MessagesController: MessagesControllerDelegate {
-    func setupNavBar(with name: String) {
-        self.navigationItem.title = name
-    }
-    
     func fetchUserAndSetupNavBarTitle() {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
@@ -252,7 +246,6 @@ extension MessagesController: MessagesControllerDelegate {
             self.messagesDictionary.removeAll()
             self.tableView.reloadData()
             self.observeUserMessages() // 메인에 해당 유저의 메세지들 불러오기
-            //            self.setupNavBarWithUser(user: user)
         }
     }
     

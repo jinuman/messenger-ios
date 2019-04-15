@@ -48,7 +48,7 @@ extension UIColor {
         self.init(red: r/255, green: g/255, blue: b/255, alpha: 1)
     }
     
-    static let bgColor = UIColor(r: 210, g: 110, b: 110)
+    static let loginBGColor = UIColor(r: 210, g: 110, b: 110)
     static let loginButtonColor = UIColor(r: 230, g: 130, b: 130)
 }
 

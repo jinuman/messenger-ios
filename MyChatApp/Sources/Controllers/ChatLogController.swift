@@ -297,12 +297,12 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
             fatalError("Chat Log cell is bad.")
         }
 
-        #warning("나중에 delegate 로 바꿔야 함")
+        #warning("나중에 delegate 로 바꿔볼 것")
         cell.chatLogController = self
         
         let message = messages[indexPath.item]
         
-        #warning("나중에 MVVM 패턴으로 변경")
+        #warning("나중에 MVVM 패턴으로 변경해보자")
         cell.message = message
         
         cell.messageTextView.text = message.text
