@@ -539,7 +539,7 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
         // CMTime(1, 60) : First frame of the video file of file url
         
         do {
-            let thumbnailCGImage = try imageGenerator.copyCGImage(at: CMTime(value: 1, timescale: 60),
+            let thumbnailCGImage = try imageGenerator.copyCGImage(at: CMTimeMake(value: 1, timescale: 60),
                                                                   actualTime: nil)
             return UIImage(cgImage: thumbnailCGImage)
         } catch let err {

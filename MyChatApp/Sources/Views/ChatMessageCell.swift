@@ -14,6 +14,13 @@ class ChatMessageCell: UICollectionViewCell {
     
     static let bubbleBlue = UIColor(r: 0, g: 137, b: 249)
     
+    let playButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(#imageLiteral(resourceName: "play"), for: .normal)
+        button.tintColor = .white
+        return button
+    }()
+    
     let profileImageView: UIImageView = {
         let iv = UIImageView()
         iv.translatesAutoresizingMaskIntoConstraints = false
@@ -64,7 +71,10 @@ class ChatMessageCell: UICollectionViewCell {
         [profileImageView, bubbleView, messageTextView].forEach {
             addSubview($0)
         }
-        bubbleView.addSubview(messageImageView)
+        
+        [messageImageView, playButton].forEach {
+            bubbleView.addSubview($0)
+        }
         
         // need x, y, w, h
         // set width anchor inside ChatLogController
@@ -94,6 +104,9 @@ class ChatMessageCell: UICollectionViewCell {
         messageImageView.topAnchor.constraint(equalTo: bubbleView.topAnchor).isActive = true
         messageImageView.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor).isActive = true
         messageImageView.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor).isActive = true
+        
+        // after messageImageView
+        playButton.centerInSuperview(size: CGSize(width: 50, height: 50))
     }
     
     required init?(coder aDecoder: NSCoder) {
