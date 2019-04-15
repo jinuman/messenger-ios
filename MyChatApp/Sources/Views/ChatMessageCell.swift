@@ -7,17 +7,27 @@
 //
 
 import UIKit
+import AVFoundation
 
 class ChatMessageCell: UICollectionViewCell {
+    
+    weak var message: Message?
     
     weak var chatLogController: ChatLogController?
     
     static let bubbleBlue = UIColor(r: 0, g: 137, b: 249)
     
-    let playButton: UIButton = {
+    let indicatorView: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .whiteLarge)
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
+    
+    lazy var playButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "play"), for: .normal)
         button.tintColor = .white
+        button.addTarget(self, action: #selector(handlePlayVideo), for: .touchUpInside)
         return button
     }()
     
@@ -72,7 +82,7 @@ class ChatMessageCell: UICollectionViewCell {
             addSubview($0)
         }
         
-        [messageImageView, playButton].forEach {
+        [messageImageView, playButton, indicatorView].forEach {
             bubbleView.addSubview($0)
         }
         
@@ -107,7 +117,10 @@ class ChatMessageCell: UICollectionViewCell {
         
         // after messageImageView
         playButton.centerInSuperview(size: CGSize(width: 50, height: 50))
+        
+        indicatorView.centerInSuperview()
     }
+    
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -115,10 +128,47 @@ class ChatMessageCell: UICollectionViewCell {
     
     // MARK:- Handling methods
     @objc fileprivate func handleZoomTap(_ tapGesture: UITapGestureRecognizer) {
+        if message?.videoUrl != nil {
+            return
+        }
+        
         // PRO tip: Don't perform a lot of custom logic inside of a view class
         guard let imageView = tapGesture.view as? UIImageView else { return }
         self.chatLogController?.performZoomIn(for: imageView)
     }
     
+    var playerLayer: AVPlayerLayer?
+    var player: AVPlayer?
+    
+    @objc fileprivate func handlePlayVideo() {
+        guard
+            let videoUrl = message?.videoUrl,
+            let url = URL(string: videoUrl) else { return }
+        
+        player = AVPlayer(url: url)
+        playerLayer = AVPlayerLayer(player: player)
+        guard
+            let playerLayer = playerLayer,
+            let player = player else { return }
+        
+        playerLayer.frame = bubbleView.bounds
+        bubbleView.layer.addSublayer(playerLayer)
+        
+        player.play()
+        
+        indicatorView.startAnimating()
+        playButton.isHidden = true
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        guard
+            let playerLayer = playerLayer,
+            let player = player else { return }
+        
+        playerLayer.removeFromSuperlayer()
+        player.pause()
+        indicatorView.stopAnimating()
+    }
 }
 

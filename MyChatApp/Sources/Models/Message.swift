@@ -14,9 +14,12 @@ class Message {
     var toId: String?
     var timestamp: Date?
     var text: String?
+    
     var imageUrl: String?
     var imageWidth: Double?
     var imageHeight: Double?
+    
+    var videoUrl: String?
     
     init(dictionary: [String : Any]) {
         self.fromId = dictionary["fromId"] as? String
@@ -29,9 +32,12 @@ class Message {
         }
         
         self.text = dictionary["text"] as? String
+        
         self.imageUrl = dictionary["imageUrl"] as? String
         self.imageWidth = dictionary["imageWidth"] as? Double
         self.imageHeight = dictionary["imageHeight"] as? Double
+        
+        self.videoUrl = dictionary["videoUrl"] as? String
     }
     
     // Based in currentUser, if it is toId or fromId

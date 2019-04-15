@@ -296,11 +296,15 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as? ChatMessageCell else {
             fatalError("Chat Log cell is bad.")
         }
-        
+
         #warning("나중에 delegate 로 바꿔야 함")
         cell.chatLogController = self
         
         let message = messages[indexPath.item]
+        
+        #warning("나중에 MVVM 패턴으로 변경")
+        cell.message = message
+        
         cell.messageTextView.text = message.text
         
         setupCell(cell: cell, message: message)
@@ -312,6 +316,8 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
             cell.bubbleWidthAnchor?.constant = 200
             cell.messageTextView.isHidden = true
         }
+        
+        cell.playButton.isHidden = message.videoUrl == nil
         
         return cell
     }
