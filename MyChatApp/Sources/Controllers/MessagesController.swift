@@ -41,7 +41,6 @@ class MessagesController: UITableViewController {
                                                            target: self, action: #selector(handleLogout))
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: #imageLiteral(resourceName: "new_message_icon"), style: .plain,
                                                             target: self, action: #selector(handleNewMessage))
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -72,9 +71,7 @@ class MessagesController: UITableViewController {
     // MARK:- Fetching user messages into MessagesController Screen
     // 항목 목록에 대한 추가를 수신 대기. 즉 여기선 메세지들이 추가되는 것을 수신 대기.
     private func observeUserMessages() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
+        guard let uid = Auth.auth().currentUser?.uid else { return }
         
         let meReference = Database.database().reference().child("user-messages").child(uid)
         meReference.observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
@@ -82,12 +79,20 @@ class MessagesController: UITableViewController {
             
             let partnerReference = Database.database().reference().child("user-messages").child(uid).child(partnerId)
             partnerReference.observe(.childAdded, with: { [weak self] (snapshot) in
-                guard let self = self else {
-                    return
-                }
+                guard let self = self else { return }
+                
                 let messageId = snapshot.key
                 self.fetchMessage(with: messageId)
+                
             })
+        }
+        
+        meReference.observe(.childRemoved) { [weak self] (snapshot) in
+            guard let self = self else { return }
+            
+            self.messagesDictionary.removeValue(forKey: snapshot.key)
+            self.attemptReloadOfTable()
+            
         }
     }
     
@@ -193,7 +198,34 @@ extension MessagesController {
             self.showChatController(for: partner)
         }
     }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let message = self.messages[indexPath.row]
+
+        guard let chatPartnerId = message.chatPartnerId() else { return }
+
+        Database.database().reference().child("user-messages").child(uid).child(chatPartnerId)
+            .removeValue { [weak self] (error, ref) in
+                if let error = error {
+                    print("Failed to delete message: \(error.localizedDescription)")
+                    return
+                }
+
+                guard let self = self else { return }
+
+                self.messagesDictionary.removeValue(forKey: chatPartnerId)
+                self.attemptReloadOfTable()
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
+        return "Remove"
+    }
 }
+
+
 
 // MARK:- MessagesController delegate methods
 extension MessagesController: MessagesControllerDelegate {
