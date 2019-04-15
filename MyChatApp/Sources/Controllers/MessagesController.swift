@@ -250,7 +250,7 @@ extension MessagesController: MessagesControllerDelegate {
     }
     
     // 재사용
-    @objc internal func showChatController(for user: User) {
+    func showChatController(for user: User) {
         let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
         chatLogController.partner = user
         
