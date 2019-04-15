@@ -10,6 +10,8 @@ import UIKit
 import FirebaseAuth
 import FirebaseStorage
 import FirebaseDatabase
+import MobileCoreServices
+import AVFoundation
 
 class ChatLogController: UICollectionViewController {
     
@@ -210,6 +212,7 @@ class ChatLogController: UICollectionViewController {
         
         imagePicker.delegate = self
         imagePicker.allowsEditing = true
+        imagePicker.mediaTypes = [kUTTypeImage, kUTTypeMovie] as [String]
         
         present(imagePicker, animated: true, completion: nil)
     }
@@ -294,7 +297,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
             fatalError("Chat Log cell is bad.")
         }
         
-        #warning("나중에 delegate 로 바꿀것")
+        #warning("나중에 delegate 로 바꿔야 함")
         cell.chatLogController = self
         
         let message = messages[indexPath.item]
@@ -312,8 +315,6 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         
         return cell
     }
-    
-    
     
     // MARK:- Custom zooming logic
     func performZoomIn(for startingImageView: UIImageView) {
@@ -462,6 +463,92 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if let videoFileUrl = info[UIImagePickerController.InfoKey.mediaURL] as? URL {
+            
+            handleVideoSelected(for: videoFileUrl)
+            
+        } else {
+            
+            handleImageSelected(for: info)
+        }
+       
+        dismiss(animated: true, completion: nil)
+    }
+    
+    private func handleVideoSelected(for fileUrl: URL) {
+        let videoName = UUID().uuidString + ".mov"
+        let videoRef = Storage.storage().reference().child("message_videos").child(videoName)
+        let uploadTask: StorageUploadTask = videoRef.putFile(from: fileUrl, metadata: nil) { (metadata, error) in
+            if let error = error {
+                print("Upload video failed: ", error.localizedDescription)
+                return
+            }
+            
+            videoRef.downloadURL(completion: { [weak self] (url, err) in
+                if let err = err {
+                    print("Video download url is not proper: ", err.localizedDescription)
+                    return
+                }
+                guard
+                    let self = self,
+                    let videoUrl = url?.absoluteString else { return }
+                
+                guard let thumbnailImage = self.thumbnailImage(for: fileUrl) else { return }
+                
+                self.uploadToFirebaseStorage(using: thumbnailImage, completion: { [weak self] (result) in
+                    guard let self = self else { return }
+                    switch result {
+                    case .success(let imageUrl):
+                        
+                        let properties: [String : Any] = [
+                            "imageUrl" : imageUrl,
+                            "imageWidth" : thumbnailImage.size.width,
+                            "imageHeight" : thumbnailImage.size.height,
+                            "videoUrl" : videoUrl
+                        ]
+                        self.sendMessage(with: properties)
+                    
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                    }
+                })
+            })
+        }
+        
+        uploadTask.observe(.progress) { [weak self] (snapshot) in
+            guard
+                let self = self,
+                let completedUnitCount = snapshot.progress?.completedUnitCount else {
+                    return
+            }
+            self.navigationItem.title = String(completedUnitCount)
+        }
+        
+        uploadTask.observe(.success) { [weak self] (snapshot) in
+            guard let self = self else { return }
+            self.navigationItem.title = self.partner?.name
+        }
+    }
+    
+    
+    
+    private func thumbnailImage(for videoFileUrl: URL) -> UIImage? {
+        let asset = AVAsset(url: videoFileUrl)
+        let imageGenerator = AVAssetImageGenerator(asset: asset)
+        
+        // CMTime(1, 60) : First frame of the video file of file url
+        
+        do {
+            let thumbnailCGImage = try imageGenerator.copyCGImage(at: CMTime(value: 1, timescale: 60),
+                                                                  actualTime: nil)
+            return UIImage(cgImage: thumbnailCGImage)
+        } catch let err {
+            print(err.localizedDescription)
+        }
+        return nil
+    }
+    
+    private func handleImageSelected(for info: [UIImagePickerController.InfoKey : Any]) {
         var selectedImageFromPicker: UIImage?
         
         if let editedImage = info[.editedImage] as? UIImage {
@@ -471,33 +558,41 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
         }
         if let selectedImage = selectedImageFromPicker {
             //            profileImageView.image = selectedImage
-            uploadToFirebaseStorage(using: selectedImage)
+            uploadToFirebaseStorage(using: selectedImage) { [weak self] (result) in
+                guard let self = self else { return }
+                switch result {
+                case .success(let imageUrl):
+                    self.sendMessage(with: imageUrl, selectedImage)
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
         }
-        dismiss(animated: true, completion: nil)
     }
     
-    private func uploadToFirebaseStorage(using image: UIImage) {
-        let imageName = UUID().uuidString
+    private func uploadToFirebaseStorage(using image: UIImage, completion: @escaping (Result<String, Error>) -> ()) {
+        let imageName = UUID().uuidString + ".png"
         let storageRef = Storage.storage().reference().child("message_images").child(imageName)
         
         guard let uploadData = image.jpegData(compressionQuality: 0.05) else {
             return
         }
         
-        storageRef.putData(uploadData, metadata: nil) { [weak self] (metadata, error) in
+        storageRef.putData(uploadData, metadata: nil) { (metadata, error) in
             if let error = error {
                 print("@@ Message image upload error: \(error.localizedDescription)")
                 return
             }
             print("!! Successfully put data to Firebase storage")
-            storageRef.downloadURL(completion: { (url, err) in
+            storageRef.downloadURL { (url, err) in
                 if let err = err {
                     print("@@ Download url error: \(err.localizedDescription)")
                     return
                 }
                 guard let imageUrl = url?.absoluteString else { return }
-                self?.sendMessage(with: imageUrl, image)
-            })
+                #warning("나중에 에러 핸들링 해야 함")
+                completion(.success(imageUrl))
+            }
         }
     }
 }
