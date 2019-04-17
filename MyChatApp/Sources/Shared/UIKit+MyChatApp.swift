@@ -50,6 +50,7 @@ extension UIColor {
     
     static let loginBGColor = UIColor(r: 210, g: 110, b: 110)
     static let loginButtonColor = UIColor(r: 230, g: 130, b: 130)
+    static let bubbleBlue = UIColor(r: 0, g: 137, b: 249)
 }
 
 extension UIView {

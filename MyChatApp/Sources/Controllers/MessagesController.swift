@@ -10,7 +10,7 @@ import UIKit
 import FirebaseAuth
 import FirebaseDatabase
 
-// Show user's messages view - Root Controller
+// Show user's entire messages per each chat partner - Root Controller
 class MessagesController: UITableViewController {
     // MARK:- Properties
     private var messages = [Message]()
@@ -61,7 +61,7 @@ class MessagesController: UITableViewController {
     }
     
     // MARK:- Fetching user messages into MessagesController Screen
-    // 항목 목록에 대한 추가를 수신 대기. 즉 여기선 메세지들이 추가되는 것을 수신 대기.
+    // 항목 목록에 대한 추가를 수신 대기. 즉 여기선 메세지들이 추가되는 것을 수신 대기한다.
     private func observeUserMessages() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
@@ -135,7 +135,7 @@ class MessagesController: UITableViewController {
     
     // MARK :- Presenting another ViewController
     @objc private func handleNewMessage() {
-        let newMessageController = NewMessageController()
+        let newMessageController = ChatPartnersController()
         newMessageController.delegate = self
         let navController = UINavigationController(rootViewController: newMessageController)
         present(navController, animated: true, completion: nil)
@@ -161,7 +161,7 @@ extension MessagesController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? UserCell else {
-            fatalError("Cell is not proper")
+            fatalError("cell is not proper")
         }
         let message = messages[indexPath.row]
         cell.message = message
@@ -187,7 +187,7 @@ extension MessagesController {
                     return
             }
             partner.id = partnerId
-            self.showChatController(for: partner)
+            self.showChatRoomController(for: partner)
         }
     }
     
@@ -226,7 +226,7 @@ extension MessagesController: LoginRegisterControllerDelegate {
             return
         }
         
-        // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values..
+        // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values.
         Database.database().reference().child("users").child(uid).observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
             guard
                 let self = self,
@@ -244,9 +244,9 @@ extension MessagesController: LoginRegisterControllerDelegate {
     }
 }
 
-extension MessagesController: NewMessageControllerDelegate {
-    func showChatController(for user: User) {
-        let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
+extension MessagesController: ChatPartnersControllerDelegate {
+    func showChatRoomController(for user: User) {
+        let chatLogController = ChatRoomController(collectionViewLayout: UICollectionViewFlowLayout())
         chatLogController.partner = user
         
         let backItem = UIBarButtonItem()

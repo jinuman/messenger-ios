@@ -1,5 +1,5 @@
 //
-//  ChatLogController.swift
+//  ChatRoomController.swift
 //  MyChatApp
 //
 //  Created by Jinwoo Kim on 25/02/2019.
@@ -13,10 +13,10 @@ import FirebaseDatabase
 import MobileCoreServices
 import AVFoundation
 
-class ChatLogController: UICollectionViewController {
+class ChatRoomController: UICollectionViewController {
     
     // MARK:- Properties for controller
-    fileprivate let cellId = "ChatLogCellId"
+    fileprivate let cellId = "ChatRoomCellId"
     // User's partner
     var partner: User? {
         didSet {
@@ -26,7 +26,7 @@ class ChatLogController: UICollectionViewController {
     // 사용자 - 대상 간의 채팅 메세지들
     var messages: [Message] = []
     
-    // MARK:- ChatLog Screen properties
+    // MARK:- Screen properties
     fileprivate var inputContainerViewBottomAnchor: NSLayoutConstraint?
     
     fileprivate var startingFrame: CGRect?
@@ -78,7 +78,7 @@ class ChatLogController: UICollectionViewController {
     }
     
     deinit {
-        print("ChatLog Controller \(#function)")
+        print("ChatRom Controller \(#function)")
     }
     
     // MARK:- Notification Center
@@ -287,7 +287,7 @@ class ChatLogController: UICollectionViewController {
 }
 
 // MARK:- Regarding collectionView methods
-extension ChatLogController: UICollectionViewDelegateFlowLayout {
+extension ChatRoomController: UICollectionViewDelegateFlowLayout {
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return messages.count
     }
@@ -351,7 +351,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         
         if message.fromId == Auth.auth().currentUser?.uid {
             // outgoing blue bubble
-            cell.bubbleView.backgroundColor = ChatMessageCell.bubbleBlue
+            cell.bubbleView.backgroundColor = .bubbleBlue
             cell.messageTextView.textColor = .white
             cell.profileImageView.isHidden = true
             cell.profileWidth?.isActive = false
@@ -402,7 +402,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
 }
 
 // MARK:- Extension regarding UITextFieldDelegate
-extension ChatLogController: UITextFieldDelegate {
+extension ChatRoomController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
         guard let text = inputTextField.text else {
@@ -416,7 +416,7 @@ extension ChatLogController: UITextFieldDelegate {
 }
 
 // MARK:- Regarding ChatMessageCellDelegate
-extension ChatLogController: ChatMessageCellDelegate {
+extension ChatRoomController: ChatMessageCellDelegate {
     // Custom zooming logic
     func performZoomIn(for startingImageView: UIImageView) {
         self.startingImageView = startingImageView
@@ -464,7 +464,7 @@ extension ChatLogController: ChatMessageCellDelegate {
 }
 
 // MARK:- Regarding Image Picker
-extension ChatLogController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+extension ChatRoomController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
     }
@@ -605,7 +605,7 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
 }
 
 // MARK:- Regarding Gesture Recognizer in order to resign keyboard
-extension ChatLogController: UIGestureRecognizerDelegate {
+extension ChatRoomController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         self.view.endEditing(true)
         return true

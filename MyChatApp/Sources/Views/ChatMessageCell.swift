@@ -15,13 +15,15 @@ protocol ChatMessageCellDelegate: class {
 
 class ChatMessageCell: UICollectionViewCell {
     
-    weak var message: Message?
+    // MARK:- Properties
+    private var playerLayer: AVPlayerLayer?
+    private var player: AVPlayer?
     
+    weak var message: Message?
     weak var delegate: ChatMessageCellDelegate?
     
-    static let bubbleBlue = UIColor(r: 0, g: 137, b: 249)
-    
-    let indicatorView: UIActivityIndicatorView = {
+    // MARK:- Screen properties
+    private let indicatorView: UIActivityIndicatorView = {
         let indicator = UIActivityIndicatorView(style: .whiteLarge)
         indicator.hidesWhenStopped = true
         return indicator
@@ -58,16 +60,11 @@ class ChatMessageCell: UICollectionViewCell {
     let bubbleView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = bubbleBlue
+        view.backgroundColor = .bubbleBlue
         view.layer.cornerRadius = 16
         view.layer.masksToBounds = true
         return view
     }()
-    
-    var bubbleWidthAnchor: NSLayoutConstraint?
-    var bubbleTrailingAnchor: NSLayoutConstraint?
-    var bubbleLeadingAnchor: NSLayoutConstraint?
-    var profileWidth: NSLayoutConstraint?
     
     let messageTextView: UITextView = {
         let tv = UITextView()
@@ -80,6 +77,13 @@ class ChatMessageCell: UICollectionViewCell {
         return tv
     }()
     
+    // MARK:- LayoutConstraint properties
+    var bubbleWidthAnchor: NSLayoutConstraint?
+    var bubbleTrailingAnchor: NSLayoutConstraint?
+    var bubbleLeadingAnchor: NSLayoutConstraint?
+    var profileWidth: NSLayoutConstraint?
+    
+    // MARK:- Initializer
     override init(frame: CGRect) {
         super.init(frame: frame)
         [profileImageView, bubbleView, messageTextView].forEach {
@@ -91,14 +95,14 @@ class ChatMessageCell: UICollectionViewCell {
         }
         
         // need x, y, w, h
-        // set width anchor inside ChatLogController
+        // set width anchor inside ChatRoomController
         profileImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
         profileImageView.centerYAnchor.constraint(equalTo: bubbleView.centerYAnchor).isActive = true
         profileWidth = profileImageView.widthAnchor.constraint(equalToConstant: 32)
         profileImageView.heightAnchor.constraint(equalTo: profileImageView.widthAnchor).isActive = true
         
         // need x, y, w, h
-        // set leading and trailing anchor inside ChatLogController
+        // set leading and trailing anchor inside ChatRoomController
         bubbleLeadingAnchor = bubbleView.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8)
         bubbleTrailingAnchor = bubbleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8)
         
@@ -125,7 +129,6 @@ class ChatMessageCell: UICollectionViewCell {
         indicatorView.centerInSuperview()
     }
     
-    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -140,9 +143,6 @@ class ChatMessageCell: UICollectionViewCell {
         guard let imageView = tapGesture.view as? UIImageView else { return }
         self.delegate?.performZoomIn(for: imageView)
     }
-    
-    var playerLayer: AVPlayerLayer?
-    var player: AVPlayer?
     
     @objc fileprivate func handlePlayVideo() {
         guard
@@ -164,6 +164,7 @@ class ChatMessageCell: UICollectionViewCell {
         playButton.isHidden = true
     }
     
+    // In order to fix cell reuse issues^^
     override func prepareForReuse() {
         super.prepareForReuse()
         guard

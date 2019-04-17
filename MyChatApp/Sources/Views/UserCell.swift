@@ -9,7 +9,7 @@
 import UIKit
 import FirebaseDatabase
 
-// MARK:- Using in NewMessageController, MessagesController 
+// MARK:- Using in ChatPartnersController, MessagesController 
 class UserCell: UITableViewCell {
     // MARK:- User Cell properties
     let profileImageView: UIImageView = {

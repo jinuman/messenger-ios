@@ -17,8 +17,8 @@
 		369ABF58220E8E1D00363286 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF56220E8E1D00363286 /* LaunchScreen.storyboard */; };
 		369ABF64220ED0F600363286 /* LoginRegisterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF63220ED0F600363286 /* LoginRegisterController.swift */; };
 		369ABF6A220ED2C500363286 /* UIKit+MyChatApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF69220ED2C500363286 /* UIKit+MyChatApp.swift */; };
-		36BC1C162223F6520083210E /* ChatLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BC1C152223F6520083210E /* ChatLogController.swift */; };
-		36D988FC221426E700751C3E /* NewMessageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D988FB221426E700751C3E /* NewMessageController.swift */; };
+		36BC1C162223F6520083210E /* ChatRoomController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BC1C152223F6520083210E /* ChatRoomController.swift */; };
+		36D988FC221426E700751C3E /* ChatPartnersController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D988FB221426E700751C3E /* ChatPartnersController.swift */; };
 		36D988FF22142F2E00751C3E /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D988FE22142F2E00751C3E /* User.swift */; };
 		7FFEFE84594502A17D74DF4B /* Pods_MyChatApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C98C40C14749031C04E440A3 /* Pods_MyChatApp.framework */; };
 /* End PBXBuildFile section */
@@ -36,8 +36,8 @@
 		369ABF59220E8E1D00363286 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		369ABF63220ED0F600363286 /* LoginRegisterController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginRegisterController.swift; sourceTree = "<group>"; };
 		369ABF69220ED2C500363286 /* UIKit+MyChatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIKit+MyChatApp.swift"; sourceTree = "<group>"; };
-		36BC1C152223F6520083210E /* ChatLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLogController.swift; sourceTree = "<group>"; };
-		36D988FB221426E700751C3E /* NewMessageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMessageController.swift; sourceTree = "<group>"; };
+		36BC1C152223F6520083210E /* ChatRoomController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRoomController.swift; sourceTree = "<group>"; };
+		36D988FB221426E700751C3E /* ChatPartnersController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatPartnersController.swift; sourceTree = "<group>"; };
 		36D988FE22142F2E00751C3E /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		77C07655FA93E9B02C11B362 /* Pods-MyChatApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MyChatApp.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MyChatApp/Pods-MyChatApp.debug.xcconfig"; sourceTree = "<group>"; };
 		C98C40C14749031C04E440A3 /* Pods_MyChatApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MyChatApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -98,8 +98,8 @@
 			children = (
 				369ABF63220ED0F600363286 /* LoginRegisterController.swift */,
 				369ABF4F220E8E1D00363286 /* MessagesController.swift */,
-				36D988FB221426E700751C3E /* NewMessageController.swift */,
-				36BC1C152223F6520083210E /* ChatLogController.swift */,
+				36D988FB221426E700751C3E /* ChatPartnersController.swift */,
+				36BC1C152223F6520083210E /* ChatRoomController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -279,9 +279,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				36BC1C162223F6520083210E /* ChatLogController.swift in Sources */,
+				36BC1C162223F6520083210E /* ChatRoomController.swift in Sources */,
 				369ABF6A220ED2C500363286 /* UIKit+MyChatApp.swift in Sources */,
-				36D988FC221426E700751C3E /* NewMessageController.swift in Sources */,
+				36D988FC221426E700751C3E /* ChatPartnersController.swift in Sources */,
 				3651A670222529A200185647 /* Message.swift in Sources */,
 				36D988FF22142F2E00751C3E /* User.swift in Sources */,
 				369ABF64220ED0F600363286 /* LoginRegisterController.swift in Sources */,

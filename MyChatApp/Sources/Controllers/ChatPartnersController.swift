@@ -1,5 +1,5 @@
 //
-//  NewMessageController.swift
+//  ChatPartnersController.swift
 //  MyChatApp
 //
 //  Created by Jinwoo Kim on 13/02/2019.
@@ -9,16 +9,16 @@
 import UIKit
 import FirebaseDatabase
 
-protocol NewMessageControllerDelegate: class {
-    func showChatController(for user: User)
+protocol ChatPartnersControllerDelegate: class {
+    func showChatRoomController(for user: User)
 }
 
-// Show new message view in terms of sending messages
-class NewMessageController: UITableViewController {
+// Show available chat partners
+class ChatPartnersController: UITableViewController {
     
     // MARK:- Properties
-    weak var delegate: NewMessageControllerDelegate?
-    private let cellId = "NewMessageCellId"
+    weak var delegate: ChatPartnersControllerDelegate?
+    private let cellId = "ChatPartnersCellId"
     private var users = [User]()
     
     // MARK:- Life Cycle methods
@@ -27,7 +27,7 @@ class NewMessageController: UITableViewController {
         tableView.dataSource = self
         tableView.delegate = self
         
-        navigationItem.title = "Chatting Partners"
+        navigationItem.title = "Partners"
         navigationController?.navigationBar.prefersLargeTitles = false
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: UIBarButtonItem.Style.plain,
                                                            target: self, action: #selector(handleCancel))
@@ -40,7 +40,11 @@ class NewMessageController: UITableViewController {
         fetchUser()
     }
     
-    // MARK:- Fetching chattable users.
+    deinit {
+        print("Partners Controller \(#function)")
+    }
+    
+    // MARK:- Helper methods
     private func fetchUser() {
         Database.database().reference().child("users").observe(DataEventType.childAdded) { [weak self] (snapshot: DataSnapshot) in
             guard
@@ -52,9 +56,9 @@ class NewMessageController: UITableViewController {
             user.id = snapshot.key
             self.users.append(user)
             
-            // Inside asynchronous background work .. Wanna sync tableView: DispatchQueue.main.async
-            DispatchQueue.main.async { [weak self] in
-                self?.tableView.reloadData()
+            // Inside asynchronous background work .. Wanna sync UI then use DispatchQueue.main.async
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
             }
         }
     }
@@ -62,8 +66,10 @@ class NewMessageController: UITableViewController {
     @objc private func handleCancel() {
         dismiss(animated: true, completion: nil)
     }
-    
-    // MARK:- Regarding tableView of NewMessageController
+}
+
+// MARK:- Regarding tableView
+extension ChatPartnersController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return users.count
     }
@@ -93,9 +99,7 @@ class NewMessageController: UITableViewController {
                 return
             }
             let user = self.users[indexPath.row]
-            // MessagesController 에서 구현하고 사용헀던 method 재사용
-            self.delegate?.showChatController(for: user)
+            self.delegate?.showChatRoomController(for: user)
         }
     }
-    
 }
