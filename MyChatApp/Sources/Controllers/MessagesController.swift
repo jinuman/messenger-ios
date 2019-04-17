@@ -10,13 +10,7 @@ import UIKit
 import FirebaseAuth
 import FirebaseDatabase
 
-protocol MessagesControllerDelegate: class {
-    func fetchUserAndSetupNavBarTitle()
-    
-    func showChatController(for user: User)
-}
-
-// Show user's messages view - Root
+// Show user's messages view - Root Controller
 class MessagesController: UITableViewController {
     // MARK:- Properties
     private var messages = [Message]()
@@ -226,7 +220,7 @@ extension MessagesController {
 
 
 // MARK:- MessagesController delegate methods
-extension MessagesController: MessagesControllerDelegate {
+extension MessagesController: LoginRegisterControllerDelegate {
     func fetchUserAndSetupNavBarTitle() {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
@@ -248,8 +242,9 @@ extension MessagesController: MessagesControllerDelegate {
             self.observeUserMessages() // 메인에 해당 유저의 메세지들 불러오기
         }
     }
-    
-    // 재사용
+}
+
+extension MessagesController: NewMessageControllerDelegate {
     func showChatController(for user: User) {
         let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
         chatLogController.partner = user

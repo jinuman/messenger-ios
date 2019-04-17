@@ -9,11 +9,15 @@
 import UIKit
 import AVFoundation
 
+protocol ChatMessageCellDelegate: class {
+    func performZoomIn(for startingImageView: UIImageView)
+}
+
 class ChatMessageCell: UICollectionViewCell {
     
     weak var message: Message?
     
-    weak var chatLogController: ChatLogController?
+    weak var delegate: ChatMessageCellDelegate?
     
     static let bubbleBlue = UIColor(r: 0, g: 137, b: 249)
     
@@ -134,7 +138,7 @@ class ChatMessageCell: UICollectionViewCell {
         
         // PRO tip: Don't perform a lot of custom logic inside of a view class
         guard let imageView = tapGesture.view as? UIImageView else { return }
-        self.chatLogController?.performZoomIn(for: imageView)
+        self.delegate?.performZoomIn(for: imageView)
     }
     
     var playerLayer: AVPlayerLayer?

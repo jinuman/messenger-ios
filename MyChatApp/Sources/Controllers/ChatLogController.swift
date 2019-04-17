@@ -298,7 +298,7 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         }
 
         #warning("나중에 delegate 로 바꿔볼 것")
-        cell.chatLogController = self
+        cell.delegate = self
         
         let message = messages[indexPath.item]
         
@@ -320,51 +320,6 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         cell.playButton.isHidden = message.videoUrl == nil
         
         return cell
-    }
-    
-    // MARK:- Custom zooming logic
-    func performZoomIn(for startingImageView: UIImageView) {
-        self.startingImageView = startingImageView
-        // 이미지 bumping 현상 방지
-        self.startingImageView?.isHidden = true
-        
-        startingFrame = startingImageView.superview?.convert(startingImageView.frame, to: nil)
-        guard let startingFrame = startingFrame else { return }
-        
-        let zoomingImageView = UIImageView(frame: startingFrame)
-        zoomingImageView.image = startingImageView.image
-        zoomingImageView.isUserInteractionEnabled = true
-        zoomingImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleZoomOut(_:))))
-        
-        guard let keyWindow = UIApplication.shared.keyWindow else { return }
-        blackBackgroundView = UIView(frame: keyWindow.frame)
-        guard let blackBackgroundView = blackBackgroundView else { return }
-        blackBackgroundView.backgroundColor = .black
-        blackBackgroundView.alpha = 0
-        
-        [blackBackgroundView, zoomingImageView].forEach {
-            keyWindow.addSubview($0)
-        }
-        
-        UIView.animate(
-            withDuration: 0.5,
-            delay: 0,
-            usingSpringWithDamping: 1,
-            initialSpringVelocity: 1,
-            options: .curveEaseOut,
-            animations: {
-                
-                blackBackgroundView.alpha = 1
-                self.inputContainerView.alpha = 0
-                
-                // scale math
-                // h2 = h1 / w1 * w2
-                let height = startingFrame.height / startingFrame.width * keyWindow.frame.width
-                
-                zoomingImageView.frame = CGRect(x: 0, y: 0, width: keyWindow.frame.width, height: height)
-                zoomingImageView.center = keyWindow.center
-                
-        }, completion: nil)
     }
     
     @objc func handleZoomOut(_ tapGesture: UITapGestureRecognizer) {
@@ -459,6 +414,54 @@ extension ChatLogController: UITextFieldDelegate {
             handleSendMessage()
         }
         return true
+    }
+}
+
+// MARK:- Regarding ChatMessageCellDelegate
+extension ChatLogController: ChatMessageCellDelegate {
+    // Custom zooming logic
+    func performZoomIn(for startingImageView: UIImageView) {
+        self.startingImageView = startingImageView
+        // 이미지 bumping 현상 방지
+        self.startingImageView?.isHidden = true
+        
+        startingFrame = startingImageView.superview?.convert(startingImageView.frame, to: nil)
+        guard let startingFrame = startingFrame else { return }
+        
+        let zoomingImageView = UIImageView(frame: startingFrame)
+        zoomingImageView.image = startingImageView.image
+        zoomingImageView.isUserInteractionEnabled = true
+        zoomingImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleZoomOut(_:))))
+        
+        guard let keyWindow = UIApplication.shared.keyWindow else { return }
+        blackBackgroundView = UIView(frame: keyWindow.frame)
+        guard let blackBackgroundView = blackBackgroundView else { return }
+        blackBackgroundView.backgroundColor = .black
+        blackBackgroundView.alpha = 0
+        
+        [blackBackgroundView, zoomingImageView].forEach {
+            keyWindow.addSubview($0)
+        }
+        
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0,
+            usingSpringWithDamping: 1,
+            initialSpringVelocity: 1,
+            options: .curveEaseOut,
+            animations: {
+                
+                blackBackgroundView.alpha = 1
+                self.inputContainerView.alpha = 0
+                
+                // scale math
+                // h2 = h1 / w1 * w2
+                let height = startingFrame.height / startingFrame.width * keyWindow.frame.width
+                
+                zoomingImageView.frame = CGRect(x: 0, y: 0, width: keyWindow.frame.width, height: height)
+                zoomingImageView.center = keyWindow.center
+                
+        }, completion: nil)
     }
 }
 

@@ -11,11 +11,15 @@ import FirebaseDatabase
 import FirebaseAuth
 import FirebaseStorage
 
+protocol LoginRegisterControllerDelegate: class {
+    func fetchUserAndSetupNavBarTitle()
+}
+
 // Show Login & Register view
 class LoginRegisterController: UIViewController {
     
     // MARK:- Properties
-    weak var delegate: MessagesControllerDelegate?
+    weak var delegate: LoginRegisterControllerDelegate?
 
     // MARK:- Screen properties
     private let profileImageButton: UIButton = {

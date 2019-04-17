@@ -9,11 +9,15 @@
 import UIKit
 import FirebaseDatabase
 
+protocol NewMessageControllerDelegate: class {
+    func showChatController(for user: User)
+}
+
 // Show new message view in terms of sending messages
 class NewMessageController: UITableViewController {
     
     // MARK:- Properties
-    weak var delegate: MessagesControllerDelegate?
+    weak var delegate: NewMessageControllerDelegate?
     private let cellId = "NewMessageCellId"
     private var users = [User]()
     
