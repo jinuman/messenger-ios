@@ -296,13 +296,11 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as? ChatMessageCell else {
             fatalError("Chat Log cell is bad.")
         }
-
-        #warning("나중에 delegate 로 바꿔볼 것")
+        
         cell.delegate = self
         
         let message = messages[indexPath.item]
         
-        #warning("나중에 MVVM 패턴으로 변경해보자")
         cell.message = message
         
         cell.messageTextView.text = message.text
@@ -599,7 +597,7 @@ extension ChatLogController: UIImagePickerControllerDelegate, UINavigationContro
                     return
                 }
                 guard let imageUrl = url?.absoluteString else { return }
-                #warning("나중에 에러 핸들링 해야 함")
+                #warning("나중에 CustomError 만들자..")
                 completion(.success(imageUrl))
             }
         }
