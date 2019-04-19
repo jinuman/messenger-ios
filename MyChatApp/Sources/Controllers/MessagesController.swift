@@ -60,6 +60,28 @@ class MessagesController: UITableViewController {
         }
     }
     
+    private func fetchUserAndSetupNavBarTitle() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        
+        // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values.
+        Database.database().reference().child("users").child(uid).observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
+            guard
+                let self = self,
+                let dictionary = snapshot.value as? [String: Any] else {
+                    return
+            }
+            self.navigationItem.title = dictionary["name"] as? String
+            
+            // 메세지들 싹 다 지우고, 다시 불러오기
+            self.messages.removeAll()
+            self.messagesDictionary.removeAll()
+            self.tableView.reloadData()
+            self.observeUserMessages() // 메인에 해당 유저의 메세지들 불러오기
+        }
+    }
+    
     // MARK:- Fetching user messages into MessagesController Screen
     // 항목 목록에 대한 추가를 수신 대기. 즉 여기선 메세지들이 추가되는 것을 수신 대기한다.
     private func observeUserMessages() {
@@ -134,21 +156,21 @@ class MessagesController: UITableViewController {
     }
     
     // MARK :- Presenting another ViewController
-    @objc private func handleNewMessage() {
+    @objc fileprivate func handleNewMessage() {
         let newMessageController = ChatPartnersController()
         newMessageController.delegate = self
         let navController = UINavigationController(rootViewController: newMessageController)
         present(navController, animated: true, completion: nil)
     }
     
-    @objc func handleLogout() {
+    @objc fileprivate func handleLogout() {
         do {
             try Auth.auth().signOut()
         } catch let logoutError {
             print(logoutError)
         }
         let loginController = LoginRegisterController()
-        loginController.delegate = self
+        loginController.fetchUserAndSetupNavBarTitle = self.fetchUserAndSetupNavBarTitle
         present(loginController, animated: true, completion: nil)
     }
 }
@@ -214,33 +236,6 @@ extension MessagesController {
     
     override func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
         return "Remove"
-    }
-}
-
-
-
-// MARK:- MessagesController delegate methods
-extension MessagesController: LoginRegisterControllerDelegate {
-    func fetchUserAndSetupNavBarTitle() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        
-        // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values.
-        Database.database().reference().child("users").child(uid).observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
-            guard
-                let self = self,
-                let dictionary = snapshot.value as? [String: Any] else {
-                    return
-            }
-            self.navigationItem.title = dictionary["name"] as? String
-            
-            // 메세지들 싹 다 지우고, 다시 불러오기
-            self.messages.removeAll()
-            self.messagesDictionary.removeAll()
-            self.tableView.reloadData()
-            self.observeUserMessages() // 메인에 해당 유저의 메세지들 불러오기
-        }
     }
 }
 

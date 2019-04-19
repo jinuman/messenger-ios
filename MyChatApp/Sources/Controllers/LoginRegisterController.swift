@@ -11,15 +11,10 @@ import FirebaseDatabase
 import FirebaseAuth
 import FirebaseStorage
 
-protocol LoginRegisterControllerDelegate: class {
-    func fetchUserAndSetupNavBarTitle()
-}
-
-// Show Login & Register view
 class LoginRegisterController: UIViewController {
     
     // MARK:- Properties
-    weak var delegate: LoginRegisterControllerDelegate?
+    var fetchUserAndSetupNavBarTitle: (() -> Void)?
 
     // MARK:- Screen properties
     private let profileImageButton: UIButton = {
@@ -190,7 +185,7 @@ class LoginRegisterController: UIViewController {
             
             guard let self = self else { return }
             
-            self.delegate?.fetchUserAndSetupNavBarTitle()
+            self.fetchUserAndSetupNavBarTitle?()
             self.dismiss(animated: true, completion: nil)
         }
     }
@@ -209,7 +204,7 @@ class LoginRegisterController: UIViewController {
             guard let self = self else { return }
             print("~ Successfully Login.")
             
-            self.delegate?.fetchUserAndSetupNavBarTitle()
+            self.fetchUserAndSetupNavBarTitle?()
             self.dismiss(animated: true, completion: nil)
         }
     }
