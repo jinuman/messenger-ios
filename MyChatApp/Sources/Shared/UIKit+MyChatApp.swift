@@ -8,14 +8,14 @@
 
 import UIKit
 
-let imageCache = NSCache<NSString, AnyObject>()
+var imageCache = [String : UIImage]()
 
 extension UIImageView {
     func loadImageUsingCache(with imageUrlString: String) {
         self.image = nil
         
         // check cache for image first
-        if let cachedImage = imageCache.object(forKey: imageUrlString as NSString) as? UIImage {
+        if let cachedImage = imageCache[imageUrlString] {
             self.image = cachedImage
             return
         }
@@ -24,22 +24,22 @@ extension UIImageView {
         guard let url = URL(string: imageUrlString) else {
             return
         }
-        URLSession.shared.dataTask(with: url) { (data, response, error) in
+        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
             if let error = error {
                 print(error.localizedDescription)
                 return
             }
-            guard let data = data else {
-                return
-            }
+            guard let imageData = data else { return }
+            let photoImage = UIImage(data: imageData)
+            
+            imageCache[url.absoluteString] = photoImage
+            
             DispatchQueue.main.async {
-                guard let downloadedImage = UIImage(data: data) else {
-                    return
-                }
-                imageCache.setObject(downloadedImage, forKey: imageUrlString as NSString)
-                self.image = downloadedImage
+                self.image = photoImage
             }
-        }.resume()
+        }
+        
+        task.resume()
     }
 }
 
