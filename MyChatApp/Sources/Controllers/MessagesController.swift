@@ -241,14 +241,14 @@ extension MessagesController {
 
 extension MessagesController: ChatPartnersControllerDelegate {
     func showChatRoomController(for user: User) {
-        let chatLogController = ChatRoomController(collectionViewLayout: UICollectionViewFlowLayout())
-        chatLogController.partner = user
+        let chatRoomController = ChatRoomController(collectionViewLayout: UICollectionViewFlowLayout())
+        chatRoomController.partner = user
         
         let backItem = UIBarButtonItem()
         backItem.title = "뒤로"
         navigationItem.backBarButtonItem = backItem
         
-        navigationController?.pushViewController(chatLogController, animated: true)
+        navigationController?.pushViewController(chatRoomController, animated: true)
     }
 }
 
