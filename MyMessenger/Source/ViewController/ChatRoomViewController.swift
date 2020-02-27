@@ -17,6 +17,12 @@ import FirebaseDatabase
 
 class ChatRoomViewController: UIViewController {
     
+    // MARK: - Constants
+    
+    private enum Metric {
+        static let inputContainterHeight: CGFloat = 50.0
+    }
+    
     // MARK: - Properties
     
     // MARK: UI
@@ -34,7 +40,7 @@ class ChatRoomViewController: UIViewController {
         collectionView.delegate = self
         collectionView.register([ChatMessageCell.self])
         collectionView.alwaysBounceVertical = true
-        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
+        collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         return collectionView
     }()
@@ -52,9 +58,7 @@ class ChatRoomViewController: UIViewController {
         return textField
     }()
     
-    private var bottomConstraint: Constraint?
-    
-    private var inputContainerViewBottomAnchor: NSLayoutConstraint?
+    private var inputContainerViewBottomConstraint: Constraint?
     
     private var startingFrame: CGRect?
     private var blackBackgroundView: UIView?
@@ -74,7 +78,14 @@ class ChatRoomViewController: UIViewController {
     // MARK: - Initializing
     
     deinit {
-        print("ChatRom Controller \(#function)")
+        self.deinitLog(objectName: self.className)
+        self.removeKeyboardNotification()
+        
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIResponder.keyboardDidShowNotification,
+            object: nil
+        )
     }
     
     // MARK: - Life cycle
@@ -83,6 +94,8 @@ class ChatRoomViewController: UIViewController {
         super.viewDidLoad()
         self.configureLayout()
         
+        self.addKeyboardAppearanceNotification()
+        
         self.navigationItem.title = partner?.name
         
         // Add gesture
@@ -90,7 +103,6 @@ class ChatRoomViewController: UIViewController {
         tapGesture.delegate = self
         self.chatCollectionView.addGestureRecognizer(tapGesture)
         
-        self.setupKeyboardObservers()
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -145,8 +157,8 @@ class ChatRoomViewController: UIViewController {
         
         self.inputContainerView.snp.makeConstraints {
             $0.leading.trailing.equalToSuperview()
-            $0.height.equalTo(50)
-            self.bottomConstraint =
+            $0.height.equalTo(Metric.inputContainterHeight)
+            self.inputContainerViewBottomConstraint =
                 $0.bottom.equalTo(self.chatCollectionView.snp.bottom).constraint
         }
         
@@ -170,54 +182,6 @@ class ChatRoomViewController: UIViewController {
         separatorLineView.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview()
             $0.height.equalTo(1)
-        }
-    }
-    
-    // MARK:- Notification Center
-    private func setupKeyboardObservers() {
-        let nc = NotificationCenter.default
-        
-        nc.addObserver(self, selector: #selector(handleKeyboardWillAppear(_:)),
-                       name: UIResponder.keyboardWillShowNotification, object: nil)
-        
-        nc.addObserver(self, selector: #selector(handleKeyboardWillAppear(_:)),
-                       name: UIResponder.keyboardWillHideNotification, object: nil)
-        
-        nc.addObserver(self, selector: #selector(handleKeyboardDidShow),
-                       name: UIResponder.keyboardDidShowNotification, object: nil)
-    }
-    
-    @objc fileprivate func handleKeyboardWillAppear(_ notification: Notification) {
-        guard
-            let userInfo = notification.userInfo,
-            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
-            let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval,
-            let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else {
-                return
-        }
-        let isKeyboardWillShow: Bool = notification.name == UIResponder.keyboardWillShowNotification
-        let safeAreaBottomHeight = view.safeAreaInsets.bottom
-        let keyboardHeight = isKeyboardWillShow
-            ? keyboardFrame.cgRectValue.height - safeAreaBottomHeight
-            : 0
-        let animationOption = UIView.AnimationOptions.init(rawValue: curve)
-        
-        UIView.animate(
-            withDuration: duration,
-            delay: 0.0,
-            options: animationOption,
-            animations: {
-                
-                self.inputContainerViewBottomAnchor?.constant = -keyboardHeight
-                self.view.layoutIfNeeded()
-                
-        }, completion: nil)
-    }
-    
-    @objc fileprivate func handleKeyboardDidShow() {
-        if messages.isEmpty == false {
-            let indexPath = IndexPath(item: messages.count - 1, section: 0)
-            self.chatCollectionView.scrollToItem(at: indexPath, at: UICollectionView.ScrollPosition.top, animated: true)
         }
     }
     
@@ -312,6 +276,86 @@ class ChatRoomViewController: UIViewController {
 
 
 // MARK: - Extensions
+
+extension ChatRoomViewController: HasKeyboard {
+    
+    func addKeyboardAppearanceNotification() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.handleKeyboardAppearance(_:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.handleKeyboardAppearance(_:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.handleKeyboardDidShow),
+            name: UIResponder.keyboardDidShowNotification,
+            object: nil
+        )
+    }
+    
+    @objc func handleKeyboardAppearance(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+            let keyboardFrame =
+                userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue,
+            let duration =
+                userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval,
+            let curve =
+                userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else {
+                    return
+        }
+        
+        let unsafeBottomAreaHeight = self.view.safeAreaInsets.bottom
+        
+        let isKeyboardWillShow = notification.name == UIResponder.keyboardWillShowNotification
+        let heightForKeyboardShowAndHide = isKeyboardWillShow
+            ? keyboardFrame.cgRectValue.height - unsafeBottomAreaHeight
+            : 0
+        
+        let animationOptions = UIView.AnimationOptions.init(rawValue: curve)
+        
+        let insetForKeyboardHeight = UIEdgeInsets(
+            top: 0,
+            left: 0,
+            bottom: heightForKeyboardShowAndHide + Metric.inputContainterHeight,
+            right: 0
+        )
+        
+        UIView.animate(
+            withDuration: duration,
+            delay: 0.0,
+            options: animationOptions,
+            animations: {
+                guard let constraint = self.inputContainerViewBottomConstraint else { return }
+                constraint.update(offset: -heightForKeyboardShowAndHide)
+                self.chatCollectionView.contentInset = insetForKeyboardHeight
+                self.chatCollectionView.scrollIndicatorInsets = insetForKeyboardHeight
+                self.view.layoutIfNeeded()
+        },
+            completion: nil)
+    }
+    
+    @objc private func handleKeyboardDidShow() {
+        if !self.messages.isEmpty {
+            let indexPath = IndexPath(item: messages.count - 1, section: 0)
+            
+            self.chatCollectionView.scrollToItem(
+                at: indexPath,
+                at: UICollectionView.ScrollPosition.top,
+                animated: true
+            )
+        }
+    }
+    
+}
 
 extension ChatRoomViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(

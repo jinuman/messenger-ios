@@ -53,6 +53,47 @@ extension NSObjectProtocol {
 }
 
 extension UIViewController {
+    
+    // MARK: When user tapped outside, Keyboard must be hide.
+    
+    var tapRecognizerToDismissKeyboard: UITapGestureRecognizer {
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        gesture.cancelsTouchesInView = false
+        return gesture
+    }
+    
+    @objc func dismissKeyboard() {
+        self.view.endEditing(true)
+    }
+    
+    @objc func attachTapGestureRecognizer(notification: Notification) {
+        self.view.addGestureRecognizer(self.tapRecognizerToDismissKeyboard)
+    }
+    
+    @objc func detachTapGestureRecognizer(notification: Notification) {
+        self.view.gestureRecognizers?.forEach {
+            if let tapRecognizer = $0 as? UITapGestureRecognizer {
+                self.view.removeGestureRecognizer(tapRecognizer)
+            }
+        }
+    }
+    
+    func addKeyboardDismissNotification() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.attachTapGestureRecognizer(notification:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.detachTapGestureRecognizer(notification:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+    
     func deinitLog(objectName: String? = nil) {
         #if DEBUG
         print("\n===============================================")

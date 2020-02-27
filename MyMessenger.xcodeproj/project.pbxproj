@@ -23,6 +23,7 @@
 		36D988FF22142F2E00751C3E /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D988FE22142F2E00751C3E /* User.swift */; };
 		36EBE6592407EF3000EF0A57 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBE6582407EF3000EF0A57 /* UIKitExtensions.swift */; };
 		36EBE65B2407F1B900EF0A57 /* SwiftyBeaverExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBE65A2407F1B900EF0A57 /* SwiftyBeaverExtensions.swift */; };
+		36EBE65F240802CF00EF0A57 /* HasKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBE65E240802CF00EF0A57 /* HasKeyboard.swift */; };
 		39FF3A8C5D2627B5C68B3BCE /* Pods_MyMessenger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4A33C457E3737B0D5DE4D68 /* Pods_MyMessenger.framework */; };
 /* End PBXBuildFile section */
 
@@ -57,6 +58,7 @@
 		36D988FE22142F2E00751C3E /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		36EBE6582407EF3000EF0A57 /* UIKitExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
 		36EBE65A2407F1B900EF0A57 /* SwiftyBeaverExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftyBeaverExtensions.swift; sourceTree = "<group>"; };
+		36EBE65E240802CF00EF0A57 /* HasKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HasKeyboard.swift; sourceTree = "<group>"; };
 		589F8D40880FC6F5887CAA78 /* Pods-MyMessenger.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MyMessenger.release.xcconfig"; path = "Pods/Target Support Files/Pods-MyMessenger/Pods-MyMessenger.release.xcconfig"; sourceTree = "<group>"; };
 		6FD336A7EDF0EE5353A7EB07 /* Pods-MyMessenger.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MyMessenger.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MyMessenger/Pods-MyMessenger.debug.xcconfig"; sourceTree = "<group>"; };
 		A4A33C457E3737B0D5DE4D68 /* Pods_MyMessenger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MyMessenger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -147,6 +149,7 @@
 		369ABF66220ED13900363286 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				36EBE65D240802C200EF0A57 /* Protocol */,
 				36EBE65C2407F1C100EF0A57 /* Extension */,
 				369ABF68220ED15900363286 /* Shared */,
 				36D988FD22142F1F00751C3E /* Model */,
@@ -190,6 +193,14 @@
 				36EBE65A2407F1B900EF0A57 /* SwiftyBeaverExtensions.swift */,
 			);
 			path = Extension;
+			sourceTree = "<group>";
+		};
+		36EBE65D240802C200EF0A57 /* Protocol */ = {
+			isa = PBXGroup;
+			children = (
+				36EBE65E240802CF00EF0A57 /* HasKeyboard.swift */,
+			);
+			path = Protocol;
 			sourceTree = "<group>";
 		};
 		93196A4CE51FC9F56AE99FAE /* Frameworks */ = {
@@ -395,6 +406,7 @@
 				36EBE65B2407F1B900EF0A57 /* SwiftyBeaverExtensions.swift in Sources */,
 				369ABF50220E8E1D00363286 /* FriendsViewController.swift in Sources */,
 				3651A67322266C9B00185647 /* UserTableViewCell.swift in Sources */,
+				36EBE65F240802CF00EF0A57 /* HasKeyboard.swift in Sources */,
 				36EBE6592407EF3000EF0A57 /* UIKitExtensions.swift in Sources */,
 				369ABF4E220E8E1D00363286 /* AppDelegate.swift in Sources */,
 			);
