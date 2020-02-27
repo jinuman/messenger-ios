@@ -397,7 +397,12 @@ extension ChatRoomController: UICollectionViewDelegateFlowLayout {
     
     private func estimatedFrame(for text: String) -> CGRect {
         let size = CGSize(width: 200, height: 1000)
-        return NSString(string: text).boundingRect(with: size, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)], context: nil)
+        return NSString(string: text).boundingRect(
+            with: size,
+            options: .usesLineFragmentOrigin,
+            attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)],
+            context: nil
+        )
     }
 }
 
