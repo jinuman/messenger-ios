@@ -133,7 +133,58 @@ class ChatMessageCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK:- Handling methods
+    // MARK: - Methods
+    
+//    private func initializeLayout() {
+//        self.addSubviews([
+//            self.profileImageView,
+//            self.bubbleView,
+//            self.messageTextView
+//        ])
+//        
+//        self.bubbleView.addSubviews([
+//            self.messageImageView,
+//            self.playButton,
+//            self.indicatorView
+//        ])
+//        
+//        self.profileImageView.snp.makeConstraints {
+//            $0.leading.equalToSuperview().offset(8)
+//            $0.centerY.equalTo(self.bubbleView.snp.centerY)
+//            $0.height.equalTo(self.profileImageView.snp.width)
+//        }
+//        
+//        self.profileWidthConstraint = self.profileImageView.widthAnchor.constraint(equalToConstant: 32)
+//        
+//        self.bubbleView.snp.makeConstraints {
+//            $0.top.equalToSuperview()
+//            $0.height.equalToSuperview()
+//        }
+//        
+//        self.bubbleLeadingConstraint = self.bubbleView.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8)
+//        self.bubbleTrailingConstraint = self.bubbleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8)
+//        self.bubbleWidthConstraint = self.bubbleView.widthAnchor.constraint(equalToConstant: 200)
+//        self.bubbleWidthConstraint?.isActive = true
+//        
+//        self.messageTextView.snp.makeConstraints {
+//            $0.top.height.equalToSuperview()
+//            $0.leading.trailing.equalTo(self.bubbleView).inset(8)
+//        }
+//        
+//        self.messageImageView.snp.makeConstraints {
+//            $0.edges.equalTo(self.bubbleView)
+//        }
+//        
+//        self.playButton.snp.makeConstraints {
+//            $0.center.equalToSuperview()
+//            $0.size.equalTo(CGSize(all: 50))
+//        }
+//        
+//        self.indicatorView.snp.makeConstraints {
+//            $0.center.equalToSuperview()
+//        }
+//    }
+    
     @objc fileprivate func handleZoomTap(_ tapGesture: UITapGestureRecognizer) {
         if message?.videoUrl != nil {
             return
