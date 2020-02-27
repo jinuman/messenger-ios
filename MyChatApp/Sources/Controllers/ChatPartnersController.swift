@@ -31,7 +31,7 @@ class ChatPartnersController: UITableViewController {
         navigationController?.navigationBar.prefersLargeTitles = false
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: UIBarButtonItem.Style.plain,
                                                            target: self, action: #selector(handleCancel))
-        tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
+        tableView.register(UserTableViewCell.self, forCellReuseIdentifier: cellId)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -75,7 +75,7 @@ extension ChatPartnersController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? UserCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? UserTableViewCell else {
             fatalError("User cell is not proper")
         }
         let user = users[indexPath.row]

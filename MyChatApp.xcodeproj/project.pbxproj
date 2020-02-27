@@ -10,7 +10,7 @@
 		360D5CD42407C5CF00F18F0C /* MyChatAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 360D5CD32407C5CF00F18F0C /* MyChatAppTests.swift */; };
 		36100EE72228F8600069036C /* ChatMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36100EE62228F8600069036C /* ChatMessageCell.swift */; };
 		3651A670222529A200185647 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3651A66F222529A200185647 /* Message.swift */; };
-		3651A67322266C9B00185647 /* UserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3651A67222266C9B00185647 /* UserCell.swift */; };
+		3651A67322266C9B00185647 /* UserTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3651A67222266C9B00185647 /* UserTableViewCell.swift */; };
 		366C414922534C3C00101446 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 366C414822534C3C00101446 /* GoogleService-Info.plist */; };
 		369ABF4E220E8E1D00363286 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF4D220E8E1D00363286 /* AppDelegate.swift */; };
 		369ABF50220E8E1D00363286 /* FriendsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF4F220E8E1D00363286 /* FriendsViewController.swift */; };
@@ -42,7 +42,7 @@
 		360D5CD52407C5CF00F18F0C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		36100EE62228F8600069036C /* ChatMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageCell.swift; sourceTree = "<group>"; };
 		3651A66F222529A200185647 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
-		3651A67222266C9B00185647 /* UserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCell.swift; sourceTree = "<group>"; };
+		3651A67222266C9B00185647 /* UserTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserTableViewCell.swift; sourceTree = "<group>"; };
 		366C414822534C3C00101446 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		369ABF4A220E8E1D00363286 /* MyChatApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyChatApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		369ABF4D220E8E1D00363286 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -94,7 +94,7 @@
 		3651A67122266C5300185647 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				3651A67222266C9B00185647 /* UserCell.swift */,
+				3651A67222266C9B00185647 /* UserTableViewCell.swift */,
 				36100EE62228F8600069036C /* ChatMessageCell.swift */,
 			);
 			path = Views;
@@ -381,7 +381,7 @@
 				369ABF64220ED0F600363286 /* LoginRegisterController.swift in Sources */,
 				36100EE72228F8600069036C /* ChatMessageCell.swift in Sources */,
 				369ABF50220E8E1D00363286 /* FriendsViewController.swift in Sources */,
-				3651A67322266C9B00185647 /* UserCell.swift in Sources */,
+				3651A67322266C9B00185647 /* UserTableViewCell.swift in Sources */,
 				369ABF4E220E8E1D00363286 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

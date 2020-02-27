@@ -22,13 +22,13 @@ class FriendsViewController: UIViewController {
     
     private lazy var guide = self.view.safeAreaLayoutGuide
     
-    private lazy var friendsTableView: UITableView = {
+    private lazy var usersTableView: UITableView = {
         let tableView = UITableView(frame: .zero)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.allowsSelection = true
         tableView.backgroundColor = .white
-        tableView.register([UserCell.self])
+        tableView.register([UserTableViewCell.self])
         return tableView
     }()
     
@@ -96,9 +96,9 @@ class FriendsViewController: UIViewController {
         
         self.view.backgroundColor = .white
         
-        self.view.addSubview(self.friendsTableView)
+        self.view.addSubview(self.usersTableView)
         
-        self.friendsTableView.snp.makeConstraints {
+        self.usersTableView.snp.makeConstraints {
             $0.edges.equalTo(self.guide)
         }
     }
@@ -121,7 +121,7 @@ class FriendsViewController: UIViewController {
             // 메세지들 싹 다 지우고, 다시 불러오기
             self.messages.removeAll()
             self.messagesDictionary.removeAll()
-            self.friendsTableView.reloadData()
+            self.usersTableView.reloadData()
             self.observeUserMessages() // 메인에 해당 유저의 메세지들 불러오기
         }
     }
@@ -195,7 +195,7 @@ class FriendsViewController: UIViewController {
             })
             DispatchQueue.main.async { [weak self] in
                 guard let `self` = self else { return }
-                self.friendsTableView.reloadData()
+                self.usersTableView.reloadData()
                 print("!! tableView reloaded after 0.1 seconds")
             }
         })
@@ -238,7 +238,7 @@ extension FriendsViewController: UITableViewDataSource, UITableViewDelegate {
         cellForRowAt indexPath: IndexPath)
         -> UITableViewCell
     {
-        let cell = tableView.dequeueReusableCell(cellType: UserCell.self, for: indexPath)
+        let cell = tableView.dequeueReusableCell(cellType: UserTableViewCell.self, for: indexPath)
         let message = messages[indexPath.row]
         cell.message = message
         return cell

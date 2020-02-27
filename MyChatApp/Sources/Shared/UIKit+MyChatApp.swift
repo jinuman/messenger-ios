@@ -43,6 +43,37 @@ extension UIImageView {
     }
 }
 
+extension NSObjectProtocol {
+    static var className: String {
+        return "\(self)"
+    }
+    var className: String {
+        return Self.className
+    }
+}
+
+extension UIViewController {
+    func deinitLog(objectName: String? = nil) {
+        #if DEBUG
+        print("\n===============================================")
+        if let objectName = objectName {
+            print("♻️ \(objectName) deinit ♻️")
+        } else {
+            print("♻️ \(self.className) deinit ♻️")
+        }
+        print("===============================================\n")
+        #endif
+    }
+    
+    static func toNavigationController(isHiddenBar: Bool = false) -> UINavigationController {
+        let `self` = self.init()
+        let navigationController = UINavigationController(rootViewController: self)
+        navigationController.isNavigationBarHidden = isHiddenBar
+        navigationController.interactivePopGestureRecognizer?.delegate = nil
+        return navigationController
+    }
+}
+
 extension UITableView {
     
     func setContentInsetWithScrollIndicatorsInset(contentInset: UIEdgeInsets) {
@@ -113,6 +144,10 @@ extension UIColor {
 }
 
 extension UIView {
+    
+    func addToSuperview(_ superview: UIView?) { superview?.addSubview(self) }
+    func addSubviews(_ subviews: [UIView?]) { subviews.forEach { $0?.addToSuperview(self) } }
+    func addSubviews(_ subviews: [UIView]) { subviews.forEach { $0.addToSuperview(self) } }
     
     @discardableResult
     func anchor(top: NSLayoutYAxisAnchor?, leading: NSLayoutXAxisAnchor?, bottom: NSLayoutYAxisAnchor?, trailing: NSLayoutXAxisAnchor?, padding: UIEdgeInsets = .zero, size: CGSize = .zero) -> AnchoredConstraints {
@@ -214,4 +249,12 @@ extension UIView {
 
 struct AnchoredConstraints {
     var top, leading, bottom, trailing, width, height: NSLayoutConstraint?
+}
+
+extension CGSize {
+    
+    init(all: CGFloat) {
+        self.init(width: all, height: all)
+    }
+    
 }
