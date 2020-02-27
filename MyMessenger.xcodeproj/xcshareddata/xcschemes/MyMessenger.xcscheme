@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "369ABF49220E8E1D00363286"
-               BuildableName = "MyChatApp.app"
-               BlueprintName = "MyChatApp"
-               ReferencedContainer = "container:MyChatApp.xcodeproj">
+               BuildableName = "MyMessenger.app"
+               BlueprintName = "MyMessenger"
+               ReferencedContainer = "container:MyMessenger.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -31,9 +31,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "369ABF49220E8E1D00363286"
-            BuildableName = "MyChatApp.app"
-            BlueprintName = "MyChatApp"
-            ReferencedContainer = "container:MyChatApp.xcodeproj">
+            BuildableName = "MyMessenger.app"
+            BlueprintName = "MyMessenger"
+            ReferencedContainer = "container:MyMessenger.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -41,10 +41,10 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "360D5CD02407C5CF00F18F0C"
-               BuildableName = "MyChatAppTests.xctest"
-               BlueprintName = "MyChatAppTests"
-               ReferencedContainer = "container:MyChatApp.xcodeproj">
+               BlueprintIdentifier = "360D5CE22407E95A00F18F0C"
+               BuildableName = "MyMessengerTests.xctest"
+               BlueprintName = "MyMessengerTests"
+               ReferencedContainer = "container:MyMessenger.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -64,9 +64,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "369ABF49220E8E1D00363286"
-            BuildableName = "MyChatApp.app"
-            BlueprintName = "MyChatApp"
-            ReferencedContainer = "container:MyChatApp.xcodeproj">
+            BuildableName = "MyMessenger.app"
+            BlueprintName = "MyMessenger"
+            ReferencedContainer = "container:MyMessenger.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <EnvironmentVariables>
@@ -88,9 +88,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "369ABF49220E8E1D00363286"
-            BuildableName = "MyChatApp.app"
-            BlueprintName = "MyChatApp"
-            ReferencedContainer = "container:MyChatApp.xcodeproj">
+            BuildableName = "MyMessenger.app"
+            BlueprintName = "MyMessenger"
+            ReferencedContainer = "container:MyMessenger.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

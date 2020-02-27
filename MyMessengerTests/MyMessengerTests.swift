@@ -1,6 +1,6 @@
 //
-//  MyChatAppTests.swift
-//  MyChatAppTests
+//  MyMessengerTests.swift
+//  MyMessengerTests
 //
 //  Created by Jinwoo Kim on 2020/02/27.
 //  Copyright © 2020 jinuman. All rights reserved.
@@ -8,7 +8,7 @@
 
 import XCTest
 
-class MyChatAppTests: XCTestCase {
+class MyMessengerTests: XCTestCase {
 
     override func setUp() {
         // Put setup code here. This method is called before the invocation of each test method in the class.

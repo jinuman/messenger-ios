@@ -79,12 +79,12 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>Pods-MyChatApp.xcscheme</key>
+		<key>Pods-MyMessenger.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>Pods-MyChatAppTests.xcscheme</key>
+		<key>Pods-MyMessengerTests.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>

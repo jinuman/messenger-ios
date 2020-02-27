@@ -1,7 +1,7 @@
 # Uncomment the next line to define a global platform for your project
  platform :ios, '11.0'
 
-target 'MyChatApp' do
+target 'MyMessenger' do
   # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
   use_frameworks!
 
@@ -31,7 +31,7 @@ target 'MyChatApp' do
   pod 'R.swift'
   pod 'Nuke'
 
-  target 'MyChatAppTests' do
+  target 'MyMessengerTests' do
     inherit! :search_paths
     # Pods for testing
   end

@@ -1,9 +1,9 @@
 //
-//  UIKit+MyChatApp.swift
-//  MyChatApp
+//  UIKitExtensions.swift
+//  MyMessenger
 //
-//  Created by Jinwoo Kim on 09/02/2019.
-//  Copyright © 2019 jinuman. All rights reserved.
+//  Created by Jinwoo Kim on 2020/02/27.
+//  Copyright © 2020 jinuman. All rights reserved.
 //
 
 import UIKit
@@ -258,3 +258,4 @@ extension CGSize {
     }
     
 }
+
