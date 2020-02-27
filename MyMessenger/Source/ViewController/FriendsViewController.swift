@@ -1,6 +1,6 @@
 //
 //  FriendsViewController.swift
-//  MyChatApp
+//  MyMessenger
 //
 //  Created by Jinwoo Kim on 09/02/2019.
 //  Copyright © 2019 jinuman. All rights reserved.

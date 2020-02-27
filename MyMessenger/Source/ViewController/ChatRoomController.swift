@@ -1,6 +1,6 @@
 //
 //  ChatRoomController.swift
-//  MyChatApp
+//  MyMessenger
 //
 //  Created by Jinwoo Kim on 25/02/2019.
 //  Copyright © 2019 jinuman. All rights reserved.

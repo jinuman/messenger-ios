@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  MyChatApp
+//  MyMessenger
 //
 //  Created by Jinwoo Kim on 09/02/2019.
 //  Copyright © 2019 jinuman. All rights reserved.
@@ -27,6 +27,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
         -> Bool
     {
+        // Convenient Logging
+        let console = ConsoleDestination()
+        log.addDestination(console)
+        
         FirebaseApp.configure()
         
         self.window = UIWindow(frame: UIScreen.main.bounds)

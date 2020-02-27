@@ -1,6 +1,6 @@
 //
 //  ChatMessageCell.swift
-//  MyChatApp
+//  MyMessenger
 //
 //  Created by Jinwoo Kim on 01/03/2019.
 //  Copyright © 2019 jinuman. All rights reserved.
