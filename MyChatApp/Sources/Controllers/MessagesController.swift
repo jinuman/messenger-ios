@@ -38,13 +38,13 @@ class MessagesController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        appDelegate.enableAllOrientation = true
+        appDelegate.isEnableAllOrientation = true
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        appDelegate.enableAllOrientation = false
+        appDelegate.isEnableAllOrientation = false
         
         let value = UIInterfaceOrientation.portrait.rawValue
         UIDevice.current.setValue(value, forKey: "orientation")

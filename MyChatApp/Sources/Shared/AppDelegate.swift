@@ -7,44 +7,52 @@
 //
 
 import UIKit
+
+import SwiftyBeaver
 import Firebase
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    var enableAllOrientation = false
+    
+    var isEnableAllOrientation: Bool = false
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         FirebaseApp.configure()
         
-        window = UIWindow(frame: UIScreen.main.bounds)
-        let rootVC = MessagesController()
+        self.window = UIWindow(frame: UIScreen.main.bounds)
+        
         if let window = window {
-            window.rootViewController = UINavigationController(rootViewController: rootVC)
+            window.rootViewController =
+                UINavigationController(rootViewController: MessagesController())
             window.makeKeyAndVisible()
         }
         
-        customizeNavigationBar()
+        self.customizeNavigationBar()
         
         return true
     }
     
-    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        if enableAllOrientation == true {
+    func application(
+        _ application: UIApplication,
+        supportedInterfaceOrientationsFor window: UIWindow?)
+        -> UIInterfaceOrientationMask
+    {
+        if self.isEnableAllOrientation == true {
             return .allButUpsideDown
         }
         return .portrait
     }
     
     private func customizeNavigationBar() {
-        if let navController = window?.rootViewController as? UINavigationController {
-            navController.navigationBar.prefersLargeTitles = false
-            navController.navigationBar.isTranslucent = true
-            navController.navigationBar.barStyle = UIBarStyle.default
-            navController.navigationBar.tintColor = UIColor.black    // BarButton color
-            navController.navigationBar.barTintColor = .white
+        if let navigationController = self.window?.rootViewController as? UINavigationController {
+            navigationController.navigationBar.prefersLargeTitles = false
+            navigationController.navigationBar.isTranslucent = true
+            navigationController.navigationBar.barStyle = UIBarStyle.default
+            navigationController.navigationBar.tintColor = UIColor.black    // BarButton color
+            navigationController.navigationBar.barTintColor = .white
         }
     }
 }
