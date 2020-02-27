@@ -1,5 +1,5 @@
 //
-//  MessagesController.swift
+//  FriendsViewController.swift
 //  MyChatApp
 //
 //  Created by Jinwoo Kim on 09/02/2019.
@@ -7,11 +7,14 @@
 //
 
 import UIKit
+
 import FirebaseAuth
 import FirebaseDatabase
 
-// Show user's entire messages per each chat partner - Root Controller
-class MessagesController: UITableViewController {
+/// Similar to Kakaotalk
+
+class FriendsViewController: UITableViewController {
+    
     // MARK:- Properties
     private var messages = [Message]()
     private var messagesDictionary = [String : Message]()
@@ -176,7 +179,7 @@ class MessagesController: UITableViewController {
 }
 
 // MARK:- Regarding tableView methods
-extension MessagesController {
+extension FriendsViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messages.count
     }
@@ -239,7 +242,7 @@ extension MessagesController {
     }
 }
 
-extension MessagesController: ChatPartnersControllerDelegate {
+extension FriendsViewController: ChatPartnersControllerDelegate {
     func showChatRoomController(for user: User) {
         let chatRoomController = ChatRoomController(collectionViewLayout: UICollectionViewFlowLayout())
         chatRoomController.partner = user

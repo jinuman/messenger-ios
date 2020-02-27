@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,7 +13,7 @@
 		3651A67322266C9B00185647 /* UserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3651A67222266C9B00185647 /* UserCell.swift */; };
 		366C414922534C3C00101446 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 366C414822534C3C00101446 /* GoogleService-Info.plist */; };
 		369ABF4E220E8E1D00363286 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF4D220E8E1D00363286 /* AppDelegate.swift */; };
-		369ABF50220E8E1D00363286 /* MessagesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF4F220E8E1D00363286 /* MessagesController.swift */; };
+		369ABF50220E8E1D00363286 /* FriendsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF4F220E8E1D00363286 /* FriendsViewController.swift */; };
 		369ABF55220E8E1D00363286 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF54220E8E1D00363286 /* Assets.xcassets */; };
 		369ABF58220E8E1D00363286 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF56220E8E1D00363286 /* LaunchScreen.storyboard */; };
 		369ABF64220ED0F600363286 /* LoginRegisterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF63220ED0F600363286 /* LoginRegisterController.swift */; };
@@ -46,7 +46,7 @@
 		366C414822534C3C00101446 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		369ABF4A220E8E1D00363286 /* MyChatApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyChatApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		369ABF4D220E8E1D00363286 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		369ABF4F220E8E1D00363286 /* MessagesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesController.swift; sourceTree = "<group>"; };
+		369ABF4F220E8E1D00363286 /* FriendsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendsViewController.swift; sourceTree = "<group>"; };
 		369ABF54220E8E1D00363286 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		369ABF57220E8E1D00363286 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		369ABF59220E8E1D00363286 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -134,7 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				369ABF63220ED0F600363286 /* LoginRegisterController.swift */,
-				369ABF4F220E8E1D00363286 /* MessagesController.swift */,
+				369ABF4F220E8E1D00363286 /* FriendsViewController.swift */,
 				36D988FB221426E700751C3E /* ChatPartnersController.swift */,
 				36BC1C152223F6520083210E /* ChatRoomController.swift */,
 			);
@@ -380,7 +380,7 @@
 				36D988FF22142F2E00751C3E /* User.swift in Sources */,
 				369ABF64220ED0F600363286 /* LoginRegisterController.swift in Sources */,
 				36100EE72228F8600069036C /* ChatMessageCell.swift in Sources */,
-				369ABF50220E8E1D00363286 /* MessagesController.swift in Sources */,
+				369ABF50220E8E1D00363286 /* FriendsViewController.swift in Sources */,
 				3651A67322266C9B00185647 /* UserCell.swift in Sources */,
 				369ABF4E220E8E1D00363286 /* AppDelegate.swift in Sources */,
 			);

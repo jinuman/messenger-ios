@@ -31,9 +31,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         self.window = UIWindow(frame: UIScreen.main.bounds)
         
-        if let window = window {
+        if let window = self.window {
             window.rootViewController =
-                UINavigationController(rootViewController: MessagesController())
+                UINavigationController(rootViewController: FriendsViewController())
             window.makeKeyAndVisible()
         }
         
