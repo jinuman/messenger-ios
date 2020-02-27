@@ -29,7 +29,7 @@ class ChatRoomViewController: UIViewController {
     
     private lazy var guide = self.view.safeAreaLayoutGuide
     
-    private lazy var chatCollectionView: UICollectionView = {
+    private lazy var chatMessageCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let collectionView = UICollectionView(
             frame: .zero,
@@ -38,7 +38,7 @@ class ChatRoomViewController: UIViewController {
         collectionView.backgroundColor = .white
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.register([ChatMessageCell.self])
+        collectionView.register([ChatMessageCollectionViewCell.self])
         collectionView.alwaysBounceVertical = true
         collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
@@ -69,7 +69,7 @@ class ChatRoomViewController: UIViewController {
     // User's partner
     var partner: User? {
         didSet {
-            observeMessages()
+            self.observeMessages()
         }
     }
     // 사용자 - 대상 간의 채팅 메세지들
@@ -95,18 +95,13 @@ class ChatRoomViewController: UIViewController {
         self.configureLayout()
         
         self.addKeyboardAppearanceNotification()
+        self.addKeyboardDismissNotification()
         
         self.navigationItem.title = partner?.name
-        
-        // Add gesture
-        let tapGesture = UITapGestureRecognizer()
-        tapGesture.delegate = self
-        self.chatCollectionView.addGestureRecognizer(tapGesture)
-        
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        self.chatCollectionView.collectionViewLayout.invalidateLayout()
+        self.chatMessageCollectionView.collectionViewLayout.invalidateLayout()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -140,7 +135,7 @@ class ChatRoomViewController: UIViewController {
         separatorLineView.backgroundColor = UIColor(r: 220, g: 220, b: 220)
         
         self.view.addSubviews([
-            self.chatCollectionView,
+            self.chatMessageCollectionView,
             self.inputContainerView
         ])
         
@@ -151,7 +146,7 @@ class ChatRoomViewController: UIViewController {
             separatorLineView
         ])
         
-        self.chatCollectionView.snp.makeConstraints {
+        self.chatMessageCollectionView.snp.makeConstraints {
             $0.edges.equalTo(self.guide)
         }
         
@@ -159,7 +154,7 @@ class ChatRoomViewController: UIViewController {
             $0.leading.trailing.equalToSuperview()
             $0.height.equalTo(Metric.inputContainterHeight)
             self.inputContainerViewBottomConstraint =
-                $0.bottom.equalTo(self.chatCollectionView.snp.bottom).constraint
+                $0.bottom.equalTo(self.chatMessageCollectionView.snp.bottom).constraint
         }
         
         uploadImageView.snp.makeConstraints {
@@ -185,36 +180,43 @@ class ChatRoomViewController: UIViewController {
         }
     }
     
-    // MARK:- Observe messages that has been changed
+    // MARK: Observe messages that have been changed
     func observeMessages() {
-        guard
-            let uid = Auth.auth().currentUser?.uid,
-            let selectedId = partner?.id else {
-                return
-        }
-        let userMessagesRef = Database.database().reference().child("user-messages").child(uid).child(selectedId)
-        userMessagesRef.observe(.childAdded) { [weak self] (snapshot) in
-            let messageId = snapshot.key
-            let messagesRef = Database.database().reference().child("messages").child(messageId)
-            messagesRef.observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
-                guard
-                    let self = self,
-                    let dictionary = snapshot.value as? [String: Any] else { return }
+        guard let uid = Auth.auth().currentUser?.uid,
+            let selectedId = partner?.id else { return }
+        
+        Database.database().reference()
+            .child("user-messages")
+            .child(uid)
+            .child(selectedId)
+            .observe(.childAdded) { [weak self] (snapshot) in
                 
-                let message = Message(dictionary: dictionary)
+                let messageId = snapshot.key
+                Database.database().reference()
+                    .child("messages")
+                    .child(messageId)
+                    .observeSingleEvent(of: .value, with: { [weak self] (snapshot) in
+                        guard let `self` = self,
+                            let dictionary = snapshot.value as? [String: Any] else { return }
+                        
+                        let message = Message(dictionary: dictionary)
 //                 #warning("need to optimize ..") // -- > Success!
 //                print(" ## \(message.text ?? "Something is wrong with message.text")")
-                self.messages.append(message)
-                DispatchQueue.main.async {
-                    self.chatCollectionView.reloadData()
-                    let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
-                    self.chatCollectionView.scrollToItem(at: indexPath, at: UICollectionView.ScrollPosition.bottom, animated: true)
-                }
-            })
+                        self.messages.append(message)
+                        DispatchQueue.main.async {
+                            self.chatMessageCollectionView.reloadData()
+                            let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
+                            self.chatMessageCollectionView.scrollToItem(
+                                at: indexPath,
+                                at: UICollectionView.ScrollPosition.bottom,
+                                animated: true
+                            )
+                        }
+                    })
         }
     }
     
-    // MARK:- Regarding sending message including images
+    // MARK: Related to send message with image
     @objc private func handleSendMessage() {
         guard let text = self.inputTextField.text else { return }
         let properties = ["text" : text]
@@ -336,8 +338,8 @@ extension ChatRoomViewController: HasKeyboard {
             animations: {
                 guard let constraint = self.inputContainerViewBottomConstraint else { return }
                 constraint.update(offset: -heightForKeyboardShowAndHide)
-                self.chatCollectionView.contentInset = insetForKeyboardHeight
-                self.chatCollectionView.scrollIndicatorInsets = insetForKeyboardHeight
+                self.chatMessageCollectionView.contentInset = insetForKeyboardHeight
+                self.chatMessageCollectionView.scrollIndicatorInsets = insetForKeyboardHeight
                 self.view.layoutIfNeeded()
         },
             completion: nil)
@@ -347,7 +349,7 @@ extension ChatRoomViewController: HasKeyboard {
         if !self.messages.isEmpty {
             let indexPath = IndexPath(item: messages.count - 1, section: 0)
             
-            self.chatCollectionView.scrollToItem(
+            self.chatMessageCollectionView.scrollToItem(
                 at: indexPath,
                 at: UICollectionView.ScrollPosition.top,
                 animated: true
@@ -355,6 +357,38 @@ extension ChatRoomViewController: HasKeyboard {
         }
     }
     
+    private func configureCell(cell: ChatMessageCollectionViewCell, message: Message) {
+        guard let profileImageUrl = self.partner?.profileImageUrl else { return }
+        cell.profileImageView.loadImageUsingCache(with: profileImageUrl)
+        
+        if message.fromId == Auth.auth().currentUser?.uid {
+            // outgoing blue bubble
+            cell.bubbleView.backgroundColor = .bubbleBlue
+            cell.messageTextView.textColor = .white
+            cell.profileImageView.isHidden = true
+            
+            cell.profileWidth?.isActive = false
+            cell.bubbleTrailingAnchor?.isActive = true
+            cell.bubbleLeadingAnchor?.isActive = false
+        } else {
+            // incoming lightGray bubble
+            cell.bubbleView.backgroundColor = UIColor(r: 240, g: 240, b: 240)
+            cell.messageTextView.textColor = .black
+            cell.profileImageView.isHidden = false
+            
+            cell.profileWidth?.isActive = true
+            cell.bubbleTrailingAnchor?.isActive = false
+            cell.bubbleLeadingAnchor?.isActive = true
+        }
+        
+        if let messageImageUrl = message.imageUrl {
+            cell.messageImageView.loadImageUsingCache(with: messageImageUrl)
+            cell.messageImageView.isHidden = false
+            cell.bubbleView.backgroundColor = .clear
+        } else {
+            cell.messageImageView.isHidden = true
+        }
+    }
 }
 
 extension ChatRoomViewController: UICollectionViewDataSource, UICollectionViewDelegate {
@@ -371,7 +405,10 @@ extension ChatRoomViewController: UICollectionViewDataSource, UICollectionViewDe
         cellForItemAt indexPath: IndexPath)
         -> UICollectionViewCell
     {
-        let cell = collectionView.dequeueReusableCell(cellType: ChatMessageCell.self, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(
+            cellType: ChatMessageCollectionViewCell.self,
+            for: indexPath
+        )
         
         cell.delegate = self
         
@@ -381,7 +418,7 @@ extension ChatRoomViewController: UICollectionViewDataSource, UICollectionViewDe
         
         cell.messageTextView.text = message.text
         
-        setupCell(cell: cell, message: message)
+        self.configureCell(cell: cell, message: message)
         
         if let text = message.text {
             cell.bubbleWidthAnchor?.constant = estimatedFrame(for: text).width + 32
@@ -422,37 +459,6 @@ extension ChatRoomViewController: UICollectionViewDelegateFlowLayout {
         }) { (completed: Bool) in
             zoomOutImageView.removeFromSuperview()
             self.startingImageView?.isHidden = false
-        }
-    }
-    
-    func setupCell(cell: ChatMessageCell, message: Message) {
-        guard let profileImageUrl = self.partner?.profileImageUrl else { return }
-        cell.profileImageView.loadImageUsingCache(with: profileImageUrl)
-        
-        if message.fromId == Auth.auth().currentUser?.uid {
-            // outgoing blue bubble
-            cell.bubbleView.backgroundColor = .bubbleBlue
-            cell.messageTextView.textColor = .white
-            cell.profileImageView.isHidden = true
-            cell.profileWidth?.isActive = false
-            cell.bubbleTrailingAnchor?.isActive = true
-            cell.bubbleLeadingAnchor?.isActive = false
-        } else {
-            // incoming lightGray bubble
-            cell.bubbleView.backgroundColor = UIColor(r: 240, g: 240, b: 240)
-            cell.messageTextView.textColor = .black
-            cell.profileImageView.isHidden = false
-            cell.profileWidth?.isActive = true
-            cell.bubbleTrailingAnchor?.isActive = false
-            cell.bubbleLeadingAnchor?.isActive = true
-        }
-        
-        if let messageImageUrl = message.imageUrl {
-            cell.messageImageView.loadImageUsingCache(with: messageImageUrl)
-            cell.messageImageView.isHidden = false
-            cell.bubbleView.backgroundColor = .clear
-        } else {
-            cell.messageImageView.isHidden = true
         }
     }
     
@@ -501,7 +507,7 @@ extension ChatRoomViewController: UITextFieldDelegate {
 }
 
 // MARK:- Regarding ChatMessageCellDelegate
-extension ChatRoomViewController: ChatMessageCellDelegate {
+extension ChatRoomViewController: ChatMessageCollectionViewCellDelegate {
     // Custom zooming logic
     func performZoomIn(for startingImageView: UIImageView) {
         self.startingImageView = startingImageView
@@ -688,12 +694,3 @@ extension ChatRoomViewController: UIImagePickerControllerDelegate, UINavigationC
         }
     }
 }
-
-// MARK:- Regarding Gesture Recognizer in order to resign keyboard
-extension ChatRoomViewController: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        self.view.endEditing(true)
-        return true
-    }
-}
-

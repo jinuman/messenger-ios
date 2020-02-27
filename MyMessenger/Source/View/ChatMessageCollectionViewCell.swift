@@ -9,7 +9,7 @@
 import UIKit
 import AVFoundation
 
-protocol ChatMessageCellDelegate: class {
+protocol ChatMessageCollectionViewCellDelegate: class {
     func performZoomIn(for startingImageView: UIImageView)
 }
 
@@ -20,7 +20,7 @@ class ChatMessageCollectionViewCell: UICollectionViewCell {
     private var player: AVPlayer?
     
     weak var message: Message?
-    weak var delegate: ChatMessageCellDelegate?
+    weak var delegate: ChatMessageCollectionViewCellDelegate?
     
     // MARK:- Screen properties
     private let indicatorView: UIActivityIndicatorView = {
