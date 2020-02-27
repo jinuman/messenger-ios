@@ -8,6 +8,7 @@
 
 import UIKit
 
+import SnapKit
 import FirebaseAuth
 import FirebaseDatabase
 
@@ -18,6 +19,8 @@ class FriendsViewController: UIViewController {
     // MARK: - Properties
     
     // MARK: UI
+    
+    private lazy var guide = self.view.safeAreaLayoutGuide
     
     private lazy var friendsTableView: UITableView = {
         let tableView = UITableView(frame: .zero)
@@ -41,11 +44,7 @@ class FriendsViewController: UIViewController {
         super.viewDidLoad()
         
         self.checkUserIsLoggedIn()
-        
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain,
-                                                           target: self, action: #selector(handleLogout))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: #imageLiteral(resourceName: "new_message_icon"), style: .plain,
-                                                            target: self, action: #selector(handleNewMessage))
+        self.configureLayout()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -65,28 +64,58 @@ class FriendsViewController: UIViewController {
         UIDevice.current.setValue(value, forKey: "orientation")
     }
 
-    // MARK:- Handling methods
+    // MARK: - Methods
+    
     private func checkUserIsLoggedIn() {
         // if user is not logged in
         if Auth.auth().currentUser?.uid == nil {
-            perform(#selector(handleLogout), with: nil, afterDelay: 0)
+            self.perform(
+                #selector(self.handleLogout),
+                with: nil,
+                afterDelay: 0
+            )
         } else {
-            fetchUserAndSetupNavBarTitle()
+            self.fetchCurrentUserNameForTitle()
         }
     }
     
-    private func fetchUserAndSetupNavBarTitle() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
+    private func configureLayout() {
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: "Logout",
+            style: .plain,
+            target: self,
+            action: #selector(self.handleLogout)
+        )
         
-        // observeSingleEvent : Once this value is returned..this callback no longer listening to any new values.
-        Database.database().reference().child("users").child(uid).observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
-            guard
-                let self = self,
-                let dictionary = snapshot.value as? [String: Any] else {
-                    return
-            }
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(named: "new_message_icon"),
+            style: .plain,
+            target: self,
+            action: #selector(self.handleNewMessage)
+        )
+        
+        self.view.backgroundColor = .white
+        
+        self.view.addSubview(self.friendsTableView)
+        
+        self.friendsTableView.snp.makeConstraints {
+            $0.edges.equalTo(self.guide)
+        }
+    }
+    
+    private func fetchCurrentUserNameForTitle() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        /// observeSingleEvent: Once this value is returned,
+        /// this callback no longer listening to any new values.
+        Database.database().reference()
+            .child("users")
+            .child(uid)
+            .observeSingleEvent(of: DataEventType.value) { [weak self] (snapshot: DataSnapshot) in
+                
+            guard let `self` = self,
+                let dictionary = snapshot.value as? [String: Any] else { return }
+                
             self.navigationItem.title = dictionary["name"] as? String
             
             // 메세지들 싹 다 지우고, 다시 불러오기
@@ -97,30 +126,32 @@ class FriendsViewController: UIViewController {
         }
     }
     
-    // MARK:- Fetching user messages into MessagesController Screen
+    // MARK: Fetching user messages into FriendsViewController screen
     // 항목 목록에 대한 추가를 수신 대기. 즉 여기선 메세지들이 추가되는 것을 수신 대기한다.
     private func observeUserMessages() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
-        let meReference = Database.database().reference().child("user-messages").child(uid)
-        meReference.observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
+        let reference = Database.database().reference().child("user-messages").child(uid)
+        
+        reference.observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
             let partnerId = snapshot.key
             
-            let partnerReference = Database.database().reference().child("user-messages").child(uid).child(partnerId)
-            partnerReference.observe(.childAdded, with: { [weak self] (snapshot) in
-                guard let self = self else { return }
-                
-                let messageId = snapshot.key
-                self.fetchMessage(with: messageId)
-                
-            })
+            // For partner
+            Database.database().reference().child("user-messages").child(uid).child(partnerId)
+                .observe(.childAdded) { [weak self] (snapshot: DataSnapshot) in
+                    guard let `self` = self else { return }
+                    
+                    let messageId = snapshot.key
+                    self.fetchMessage(with: messageId)
+            }
+            
         }
         
-        meReference.observe(.childRemoved) { [weak self] (snapshot) in
-            guard let self = self else { return }
+        reference.observe(.childRemoved) { [weak self] (snapshot) in
+            guard let `self` = self else { return }
             
             self.messagesDictionary.removeValue(forKey: snapshot.key)
-            self.attemptReloadOfTable()
+            self.attemptToReloadTableView()
             
         }
     }
@@ -137,7 +168,7 @@ class FriendsViewController: UIViewController {
                 
             self.messagesDictionary[chatPartnerId] = message
             self.messages.append(message)
-            self.attemptReloadOfTable()
+            self.attemptToReloadTableView()
         })
     }
     
@@ -145,7 +176,7 @@ class FriendsViewController: UIViewController {
     // Continuously cancel timer..and setup a new timer
     // Finally, no longer cancel the timer. -> Because timer is working with main thread run loop..? Almost right
     // So it fires the block after 0.1 sec
-    func attemptReloadOfTable() {
+    func attemptToReloadTableView() {
         self.timer?.invalidate()
 //        print("Canceled timer just before.")
         self.timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false, block: { [weak self] (timer: Timer) in
@@ -171,22 +202,21 @@ class FriendsViewController: UIViewController {
 //        print("Getting messages?")
     }
     
-    // MARK :- Presenting another ViewController
-    @objc fileprivate func handleNewMessage() {
+    @objc private func handleNewMessage() {
         let newMessageController = ChatPartnersController()
         newMessageController.delegate = self
         let navController = UINavigationController(rootViewController: newMessageController)
         present(navController, animated: true, completion: nil)
     }
     
-    @objc fileprivate func handleLogout() {
+    @objc private func handleLogout() {
         do {
             try Auth.auth().signOut()
         } catch let logoutError {
             print(logoutError)
         }
         let loginController = LoginRegisterController()
-        loginController.fetchUserAndSetupNavBarTitle = self.fetchUserAndSetupNavBarTitle
+        loginController.fetchUserAndSetupNavBarTitle = self.fetchCurrentUserNameForTitle
         present(loginController, animated: true, completion: nil)
     }
 }
@@ -265,7 +295,7 @@ extension FriendsViewController: UITableViewDataSource, UITableViewDelegate {
                 guard let self = self else { return }
 
                 self.messagesDictionary.removeValue(forKey: chatPartnerId)
-                self.attemptReloadOfTable()
+                self.attemptToReloadTableView()
         }
     }
     
