@@ -92,13 +92,13 @@
 			path = MyMessengerTests;
 			sourceTree = "<group>";
 		};
-		3651A67122266C5300185647 /* Views */ = {
+		3651A67122266C5300185647 /* View */ = {
 			isa = PBXGroup;
 			children = (
 				3651A67222266C9B00185647 /* UserTableViewCell.swift */,
 				36100EE62228F8600069036C /* ChatMessageCell.swift */,
 			);
-			path = Views;
+			path = View;
 			sourceTree = "<group>";
 		};
 		369ABF41220E8E1D00363286 = {
@@ -124,14 +124,14 @@
 		369ABF4C220E8E1D00363286 /* MyMessenger */ = {
 			isa = PBXGroup;
 			children = (
-				369ABF66220ED13900363286 /* Sources */,
-				369ABF67220ED14700363286 /* Resources */,
+				369ABF66220ED13900363286 /* Source */,
+				369ABF67220ED14700363286 /* Resource */,
 				369ABF56220E8E1D00363286 /* LaunchScreen.storyboard */,
 			);
 			path = MyMessenger;
 			sourceTree = "<group>";
 		};
-		369ABF65220ED11E00363286 /* Controllers */ = {
+		369ABF65220ED11E00363286 /* ViewController */ = {
 			isa = PBXGroup;
 			children = (
 				369ABF63220ED0F600363286 /* LoginRegisterController.swift */,
@@ -139,28 +139,28 @@
 				36D988FB221426E700751C3E /* ChatPartnersController.swift */,
 				36BC1C152223F6520083210E /* ChatRoomController.swift */,
 			);
-			path = Controllers;
+			path = ViewController;
 			sourceTree = "<group>";
 		};
-		369ABF66220ED13900363286 /* Sources */ = {
+		369ABF66220ED13900363286 /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				369ABF68220ED15900363286 /* Shared */,
-				36D988FD22142F1F00751C3E /* Models */,
-				3651A67122266C5300185647 /* Views */,
-				369ABF65220ED11E00363286 /* Controllers */,
+				36D988FD22142F1F00751C3E /* Model */,
+				3651A67122266C5300185647 /* View */,
+				369ABF65220ED11E00363286 /* ViewController */,
 			);
-			path = Sources;
+			path = Source;
 			sourceTree = "<group>";
 		};
-		369ABF67220ED14700363286 /* Resources */ = {
+		369ABF67220ED14700363286 /* Resource */ = {
 			isa = PBXGroup;
 			children = (
 				360D5CDD2407E75800F18F0C /* GoogleService-Info.plist */,
 				369ABF54220E8E1D00363286 /* Assets.xcassets */,
 				369ABF59220E8E1D00363286 /* Info.plist */,
 			);
-			path = Resources;
+			path = Resource;
 			sourceTree = "<group>";
 		};
 		369ABF68220ED15900363286 /* Shared */ = {
@@ -172,13 +172,13 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		36D988FD22142F1F00751C3E /* Models */ = {
+		36D988FD22142F1F00751C3E /* Model */ = {
 			isa = PBXGroup;
 			children = (
 				36D988FE22142F2E00751C3E /* User.swift */,
 				3651A66F222529A200185647 /* Message.swift */,
 			);
-			path = Models;
+			path = Model;
 			sourceTree = "<group>";
 		};
 		93196A4CE51FC9F56AE99FAE /* Frameworks */ = {
@@ -577,7 +577,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = K27KLZMF6K;
-				INFOPLIST_FILE = "$(SRCROOT)/MyMessenger/Resources/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/MyMessenger/Resource/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -596,7 +596,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = K27KLZMF6K;
-				INFOPLIST_FILE = "$(SRCROOT)/MyMessenger/Resources/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/MyMessenger/Resource/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
