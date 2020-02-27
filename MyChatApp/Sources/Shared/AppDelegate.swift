@@ -13,13 +13,20 @@ import Firebase
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    
+    // MARK: - Properties
 
     var window: UIWindow?
     
     var isEnableAllOrientation: Bool = false
-
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
+    
+    // MARK: - Life cycle
+    
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
+        -> Bool
+    {
         FirebaseApp.configure()
         
         self.window = UIWindow(frame: UIScreen.main.bounds)
@@ -46,6 +53,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return .portrait
     }
     
+    // MARK: - Methods
+    
     private func customizeNavigationBar() {
         if let navigationController = self.window?.rootViewController as? UINavigationController {
             navigationController.navigationBar.prefersLargeTitles = false
@@ -56,4 +65,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 }
-
