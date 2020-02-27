@@ -13,24 +13,34 @@ import FirebaseDatabase
 
 /// Similar to Kakaotalk
 
-class FriendsViewController: UITableViewController {
+class FriendsViewController: UIViewController {
     
-    // MARK:- Properties
-    private var messages = [Message]()
-    private var messagesDictionary = [String : Message]()
-    fileprivate let cellId = "MessagesCellId"
-    fileprivate var timer: Timer?
+    // MARK: - Properties
     
-    // MARK:- Life Cycle methods
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        checkUserIsLoggedIn()
-        
+    // MARK: UI
+    
+    private lazy var friendsTableView: UITableView = {
+        let tableView = UITableView(frame: .zero)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.allowsSelection = true
-        tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
+        tableView.backgroundColor = .white
+        tableView.register([UserCell.self])
+        return tableView
+    }()
+    
+    // MARK: General
+    
+    private var messages = [Message]()
+    private var messagesDictionary = [String : Message]()
+    private var timer: Timer?
+    
+    // MARK: - Life cycle
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.checkUserIsLoggedIn()
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain,
                                                            target: self, action: #selector(handleLogout))
@@ -40,12 +50,14 @@ class FriendsViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         appDelegate.isEnableAllOrientation = true
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         appDelegate.isEnableAllOrientation = false
         
@@ -80,7 +92,7 @@ class FriendsViewController: UITableViewController {
             // 메세지들 싹 다 지우고, 다시 불러오기
             self.messages.removeAll()
             self.messagesDictionary.removeAll()
-            self.tableView.reloadData()
+            self.friendsTableView.reloadData()
             self.observeUserMessages() // 메인에 해당 유저의 메세지들 불러오기
         }
     }
@@ -151,7 +163,8 @@ class FriendsViewController: UITableViewController {
                 }
             })
             DispatchQueue.main.async { [weak self] in
-                self?.tableView.reloadData()
+                guard let `self` = self else { return }
+                self.friendsTableView.reloadData()
                 print("!! tableView reloaded after 0.1 seconds")
             }
         })
@@ -178,26 +191,41 @@ class FriendsViewController: UITableViewController {
     }
 }
 
-// MARK:- Regarding tableView methods
-extension FriendsViewController {
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+// MARK: - Extensions
+
+extension FriendsViewController: UITableViewDataSource, UITableViewDelegate {
+    
+    func tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Int)
+        -> Int
+    {
         return messages.count
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as? UserCell else {
-            fatalError("cell is not proper")
-        }
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath)
+        -> UITableViewCell
+    {
+        let cell = tableView.dequeueReusableCell(cellType: UserCell.self, for: indexPath)
         let message = messages[indexPath.row]
         cell.message = message
         return cell
     }
     
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    func tableView(
+        _ tableView: UITableView,
+        heightForRowAt indexPath: IndexPath)
+        -> CGFloat
+    {
         return 84
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(
+        _ tableView: UITableView,
+        didSelectRowAt indexPath: IndexPath)
+    {
         let message = messages[indexPath.row]
         guard let partnerId = message.chatPartnerId() else {
             return
@@ -216,7 +244,11 @@ extension FriendsViewController {
         }
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+    func tableView(
+        _ tableView: UITableView,
+        commit editingStyle: UITableViewCell.EditingStyle,
+        forRowAt indexPath: IndexPath)
+    {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
         let message = self.messages[indexPath.row]
@@ -237,12 +269,17 @@ extension FriendsViewController {
         }
     }
     
-    override func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
+    func tableView(
+        _ tableView: UITableView,
+        titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath)
+        -> String?
+    {
         return "Remove"
     }
 }
 
 extension FriendsViewController: ChatPartnersControllerDelegate {
+    
     func showChatRoomController(for user: User) {
         let chatRoomController = ChatRoomController(collectionViewLayout: UICollectionViewFlowLayout())
         chatRoomController.partner = user

@@ -43,6 +43,65 @@ extension UIImageView {
     }
 }
 
+extension UITableView {
+    
+    func setContentInsetWithScrollIndicatorsInset(contentInset: UIEdgeInsets) {
+        self.contentInset = contentInset
+        self.scrollIndicatorInsets = contentInset
+    }
+    
+    public func registerNibName(_ name: String) {
+        register(UINib(nibName: name, bundle: nil), forCellReuseIdentifier: name)
+    }
+    
+    public func dequeueReusableCell<T: UITableViewCell>(
+        cellType: T.Type,
+        for indexPath: IndexPath)
+        -> T
+    {
+        return dequeueReusableCell(withIdentifier: "\(T.self)", for: indexPath) as? T ?? T()
+    }
+    
+    /**
+     다수의 UITableViewCell들을 동시에 register 할 수 있도록 도와준다.
+     
+     - Parameters:
+        - cellTypes: 다수의 UITableViewCell.Type들로 이루어진 Array
+     */
+    func register(_ cellTypes: [UITableViewCell.Type]) {
+        for cellType in cellTypes {
+            self.register(cellType, forCellReuseIdentifier: "\(cellType.self)")
+        }
+    }
+}
+
+extension UICollectionView {
+    
+    func registerNibName(_ name: String) {
+        register(UINib(nibName: name, bundle: nil), forCellWithReuseIdentifier: name)
+    }
+    
+    func dequeueReusableCell<T: UICollectionViewCell>(
+        cellType: T.Type,
+        for indexPath: IndexPath)
+        -> T
+    {
+        return dequeueReusableCell(withReuseIdentifier: "\(T.self)",for: indexPath) as? T ?? T()
+    }
+    
+    /**
+     다수의 UICollectionViewCell들을 동시에 register 할 수 있도록 도와준다.
+     
+     - Parameters:
+     - cellTypes: 다수의 UICollectionViewCell.Type들로 이루어진 Array
+     */
+    func register<T: UICollectionViewCell>(_ cellTypes: [T.Type]) {
+        for cellType in cellTypes {
+            self.register(cellType, forCellWithReuseIdentifier: "\(cellType.self)")
+        }
+    }
+}
+
 extension UIColor {
     convenience init(r: CGFloat, g: CGFloat, b: CGFloat) {
         self.init(red: r/255, green: g/255, blue: b/255, alpha: 1)
