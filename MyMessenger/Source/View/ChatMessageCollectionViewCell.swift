@@ -13,7 +13,7 @@ protocol ChatMessageCellDelegate: class {
     func performZoomIn(for startingImageView: UIImageView)
 }
 
-class ChatMessageCell: UICollectionViewCell {
+class ChatMessageCollectionViewCell: UICollectionViewCell {
     
     // MARK:- Properties
     private var playerLayer: AVPlayerLayer?
