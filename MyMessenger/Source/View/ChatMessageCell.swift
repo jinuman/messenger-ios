@@ -95,14 +95,14 @@ class ChatMessageCell: UICollectionViewCell {
         }
         
         // need x, y, w, h
-        // set width anchor inside ChatRoomController
+        // set width anchor inside ChatRoomViewController
         profileImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 8).isActive = true
         profileImageView.centerYAnchor.constraint(equalTo: bubbleView.centerYAnchor).isActive = true
         profileWidth = profileImageView.widthAnchor.constraint(equalToConstant: 32)
         profileImageView.heightAnchor.constraint(equalTo: profileImageView.widthAnchor).isActive = true
         
         // need x, y, w, h
-        // set leading and trailing anchor inside ChatRoomController
+        // set leading and trailing anchor inside ChatRoomViewController
         bubbleLeadingAnchor = bubbleView.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8)
         bubbleTrailingAnchor = bubbleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -8)
         

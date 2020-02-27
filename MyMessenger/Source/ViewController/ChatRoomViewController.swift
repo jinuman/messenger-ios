@@ -1,5 +1,5 @@
 //
-//  ChatRoomController.swift
+//  ChatRoomViewController.swift
 //  MyMessenger
 //
 //  Created by Jinwoo Kim on 25/02/2019.
@@ -7,16 +7,61 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseStorage
-import FirebaseDatabase
 import MobileCoreServices
 import AVFoundation
 
-class ChatRoomController: UICollectionViewController {
+import SnapKit
+import FirebaseAuth
+import FirebaseStorage
+import FirebaseDatabase
+
+class ChatRoomViewController: UIViewController {
     
-    // MARK:- Properties for controller
-    fileprivate let cellId = "ChatRoomCellId"
+    // MARK: - Properties
+    
+    // MARK: UI
+    
+    private lazy var guide = self.view.safeAreaLayoutGuide
+    
+    private lazy var chatCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        let collectionView = UICollectionView(
+            frame: .zero,
+            collectionViewLayout: layout
+        )
+        collectionView.backgroundColor = .white
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.register([ChatMessageCell.self])
+        collectionView.alwaysBounceVertical = true
+        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
+        collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
+        return collectionView
+    }()
+    
+    private let inputContainerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        return view
+    }()
+    
+    private lazy var inputTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "Enter message..."
+        textField.delegate = self
+        return textField
+    }()
+    
+    private var bottomConstraint: Constraint?
+    
+    private var inputContainerViewBottomAnchor: NSLayoutConstraint?
+    
+    private var startingFrame: CGRect?
+    private var blackBackgroundView: UIView?
+    private var startingImageView: UIImageView?
+    
+    // MARK: General
+    
     // User's partner
     var partner: User? {
         didSet {
@@ -26,63 +71,110 @@ class ChatRoomController: UICollectionViewController {
     // 사용자 - 대상 간의 채팅 메세지들
     var messages: [Message] = []
     
-    // MARK:- Screen properties
-    fileprivate var inputContainerViewBottomAnchor: NSLayoutConstraint?
-    
-    fileprivate var startingFrame: CGRect?
-    fileprivate var blackBackgroundView: UIView?
-    fileprivate var startingImageView: UIImageView?
-    
-    let inputContainerView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .white
-        return view
-    }()
-    
-    lazy var inputTextField: UITextField = {
-        let tf = UITextField()
-        tf.translatesAutoresizingMaskIntoConstraints = false
-        tf.placeholder = "Enter message..."
-        tf.delegate = self
-        return tf
-    }()
-    
-    // MARK:- Life Cycle methods
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .white
-        
-        navigationItem.title = partner?.name
-        
-        // Add gesture
-        let tapGesture = UITapGestureRecognizer()
-        tapGesture.delegate = self
-        collectionView.addGestureRecognizer(tapGesture)
-        
-        setupKeyboardObservers()
-        
-        setupCollectionView()
-        
-        setupInputComponents()
-    }
-    
-    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        collectionView.collectionViewLayout.invalidateLayout()
-    }
-    
-    // In order to fix Notification memory leak.
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        NotificationCenter.default.removeObserver(self)
-    }
+    // MARK: - Initializing
     
     deinit {
         print("ChatRom Controller \(#function)")
     }
     
+    // MARK: - Life cycle
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.configureLayout()
+        
+        self.navigationItem.title = partner?.name
+        
+        // Add gesture
+        let tapGesture = UITapGestureRecognizer()
+        tapGesture.delegate = self
+        self.chatCollectionView.addGestureRecognizer(tapGesture)
+        
+        self.setupKeyboardObservers()
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        self.chatCollectionView.collectionViewLayout.invalidateLayout()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // MARK: - Methods
+    
+    private func configureLayout() {
+        self.view.backgroundColor = .white
+        
+        let tapRecognizer = UITapGestureRecognizer(
+            target: self,
+            action: #selector(self.handleUploadTap)
+        )
+        
+        let uploadImageView = UIImageView(image: UIImage(named: "upload_image_icon"))
+        uploadImageView.addGestureRecognizer(tapRecognizer)
+        uploadImageView.isUserInteractionEnabled = true
+        
+        let sendButton = UIButton(type: .system)
+        sendButton.setTitle("Send", for: .normal)
+        sendButton.addTarget(
+            self,
+            action: #selector(self.handleSendMessage),
+            for: .touchUpInside
+        )
+        
+        let separatorLineView = UIView()
+        separatorLineView.backgroundColor = UIColor(r: 220, g: 220, b: 220)
+        
+        self.view.addSubviews([
+            self.chatCollectionView,
+            self.inputContainerView
+        ])
+        
+        self.inputContainerView.addSubviews([
+            uploadImageView,
+            self.inputTextField,
+            sendButton,
+            separatorLineView
+        ])
+        
+        self.chatCollectionView.snp.makeConstraints {
+            $0.edges.equalTo(self.guide)
+        }
+        
+        self.inputContainerView.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview()
+            $0.height.equalTo(50)
+            self.bottomConstraint =
+                $0.bottom.equalTo(self.chatCollectionView.snp.bottom).constraint
+        }
+        
+        uploadImageView.snp.makeConstraints {
+            $0.leading.centerY.equalToSuperview()
+            $0.size.equalTo(CGSize(all: 44.0))
+        }
+        
+        self.inputTextField.snp.makeConstraints {
+            $0.leading.equalTo(uploadImageView.snp.trailing).offset(8)
+            $0.centerY.equalToSuperview()
+            $0.trailing.equalTo(sendButton.snp.leading)
+            $0.height.equalToSuperview()
+        }
+        
+        sendButton.snp.makeConstraints {
+            $0.centerY.trailing.height.equalToSuperview()
+            $0.width.equalTo(80)
+        }
+        
+        separatorLineView.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+            $0.height.equalTo(1)
+        }
+    }
+    
     // MARK:- Notification Center
-    fileprivate func setupKeyboardObservers() {
+    private func setupKeyboardObservers() {
         let nc = NotificationCenter.default
         
         nc.addObserver(self, selector: #selector(handleKeyboardWillAppear(_:)),
@@ -125,7 +217,7 @@ class ChatRoomController: UICollectionViewController {
     @objc fileprivate func handleKeyboardDidShow() {
         if messages.isEmpty == false {
             let indexPath = IndexPath(item: messages.count - 1, section: 0)
-            collectionView?.scrollToItem(at: indexPath, at: UICollectionView.ScrollPosition.top, animated: true)
+            self.chatCollectionView.scrollToItem(at: indexPath, at: UICollectionView.ScrollPosition.top, animated: true)
         }
     }
     
@@ -150,9 +242,9 @@ class ChatRoomController: UICollectionViewController {
 //                print(" ## \(message.text ?? "Something is wrong with message.text")")
                 self.messages.append(message)
                 DispatchQueue.main.async {
-                    self.collectionView.reloadData()
+                    self.chatCollectionView.reloadData()
                     let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
-                    self.collectionView.scrollToItem(at: indexPath, at: UICollectionView.ScrollPosition.bottom, animated: true)
+                    self.chatCollectionView.scrollToItem(at: indexPath, at: UICollectionView.ScrollPosition.bottom, animated: true)
                 }
             })
         }
@@ -216,86 +308,26 @@ class ChatRoomController: UICollectionViewController {
         
         present(imagePicker, animated: true, completion: nil)
     }
-    
-    // MARK:- Regarding Setting views and Auto-layout methods
-    fileprivate func setupCollectionView() {
-        let guide = view.safeAreaLayoutGuide
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.backgroundColor = .white
-        collectionView.alwaysBounceVertical = true  // Draggable
-        collectionView.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
-        collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
-        collectionView.register(ChatMessageCell.self, forCellWithReuseIdentifier: cellId)
-        
-        collectionView.leadingAnchor.constraint(equalTo: guide.leadingAnchor).isActive = true
-        collectionView.topAnchor.constraint(equalTo: guide.topAnchor).isActive = true
-        collectionView.trailingAnchor.constraint(equalTo: guide.trailingAnchor).isActive = true
-        collectionView.bottomAnchor.constraint(equalTo: guide.bottomAnchor).isActive = true
-    }
-    fileprivate func setupInputComponents() {
-        view.addSubview(inputContainerView)
-        // need x, y, w, h
-        inputContainerView.leadingAnchor.constraint(equalTo: collectionView.leadingAnchor).isActive = true
-        inputContainerView.widthAnchor.constraint(equalTo: collectionView.widthAnchor).isActive = true
-        inputContainerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        inputContainerViewBottomAnchor = inputContainerView.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor)
-        inputContainerViewBottomAnchor?.isActive = true
-        
-        let uploadImageView = UIImageView()
-        uploadImageView.translatesAutoresizingMaskIntoConstraints = false
-        uploadImageView.image = #imageLiteral(resourceName: "upload_image_icon")
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleUploadTap))
-        uploadImageView.addGestureRecognizer(tapRecognizer)
-        uploadImageView.isUserInteractionEnabled = true
-        
-        let sendButton = UIButton(type: .system)
-        sendButton.translatesAutoresizingMaskIntoConstraints = false
-        sendButton.setTitle("Send", for: .normal)
-        sendButton.addTarget(self, action: #selector(handleSendMessage), for: .touchUpInside)
-        
-        let separatorLineView = UIView()
-        separatorLineView.translatesAutoresizingMaskIntoConstraints = false
-        separatorLineView.backgroundColor = UIColor(r: 220, g: 220, b: 220)
-        
-        [uploadImageView, inputTextField, sendButton, separatorLineView].forEach {
-            inputContainerView.addSubview($0)
-        }
-        // need x, y, w, h
-        uploadImageView.leadingAnchor.constraint(equalTo: inputContainerView.leadingAnchor).isActive = true
-        uploadImageView.centerYAnchor.constraint(equalTo: inputContainerView.centerYAnchor).isActive = true
-        uploadImageView.widthAnchor.constraint(equalToConstant: 44).isActive = true
-        uploadImageView.heightAnchor.constraint(equalToConstant: 44).isActive = true
-        
-        // need x, y, w, h
-        inputTextField.leadingAnchor.constraint(equalTo: uploadImageView.trailingAnchor, constant: 8).isActive = true
-        inputTextField.centerYAnchor.constraint(equalTo: inputContainerView.centerYAnchor).isActive = true
-        inputTextField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor).isActive = true
-        inputTextField.heightAnchor.constraint(equalTo: inputContainerView.heightAnchor).isActive = true
-        
-        // need x, y, w, h
-        sendButton.trailingAnchor.constraint(equalTo: inputContainerView.trailingAnchor).isActive = true
-        sendButton.centerYAnchor.constraint(equalTo: inputContainerView.centerYAnchor).isActive = true
-        sendButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
-        sendButton.heightAnchor.constraint(equalTo: inputContainerView.heightAnchor).isActive = true
-        
-        // need x, y, w, h
-        separatorLineView.leadingAnchor.constraint(equalTo: inputContainerView.leadingAnchor).isActive = true
-        separatorLineView.topAnchor.constraint(equalTo: inputContainerView.topAnchor).isActive = true
-        separatorLineView.widthAnchor.constraint(equalTo: inputContainerView.widthAnchor).isActive = true
-        separatorLineView.heightAnchor.constraint(equalToConstant: 1).isActive = true
-    }
 }
 
-// MARK:- Regarding collectionView methods
-extension ChatRoomController: UICollectionViewDelegateFlowLayout {
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return messages.count
+
+// MARK: - Extensions
+
+extension ChatRoomViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        numberOfItemsInSection section: Int)
+        -> Int
+    {
+        return self.messages.count
     }
     
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as? ChatMessageCell else {
-            fatalError("Chat Log cell is bad.")
-        }
+    func collectionView(
+        _ collectionView: UICollectionView,
+        cellForItemAt indexPath: IndexPath)
+        -> UICollectionViewCell
+    {
+        let cell = collectionView.dequeueReusableCell(cellType: ChatMessageCell.self, for: indexPath)
         
         cell.delegate = self
         
@@ -319,6 +351,10 @@ extension ChatRoomController: UICollectionViewDelegateFlowLayout {
         
         return cell
     }
+}
+
+extension ChatRoomViewController: UICollectionViewDelegateFlowLayout {
+    
     
     @objc func handleZoomOut(_ tapGesture: UITapGestureRecognizer) {
         guard let zoomOutImageView = tapGesture.view else { return }
@@ -407,7 +443,7 @@ extension ChatRoomController: UICollectionViewDelegateFlowLayout {
 }
 
 // MARK:- Extension regarding UITextFieldDelegate
-extension ChatRoomController: UITextFieldDelegate {
+extension ChatRoomViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
         guard let text = inputTextField.text else {
@@ -421,7 +457,7 @@ extension ChatRoomController: UITextFieldDelegate {
 }
 
 // MARK:- Regarding ChatMessageCellDelegate
-extension ChatRoomController: ChatMessageCellDelegate {
+extension ChatRoomViewController: ChatMessageCellDelegate {
     // Custom zooming logic
     func performZoomIn(for startingImageView: UIImageView) {
         self.startingImageView = startingImageView
@@ -469,7 +505,7 @@ extension ChatRoomController: ChatMessageCellDelegate {
 }
 
 // MARK:- Regarding Image Picker
-extension ChatRoomController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+extension ChatRoomViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
     }
@@ -610,7 +646,7 @@ extension ChatRoomController: UIImagePickerControllerDelegate, UINavigationContr
 }
 
 // MARK:- Regarding Gesture Recognizer in order to resign keyboard
-extension ChatRoomController: UIGestureRecognizerDelegate {
+extension ChatRoomViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         self.view.endEditing(true)
         return true

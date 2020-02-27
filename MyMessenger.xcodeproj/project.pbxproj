@@ -18,7 +18,7 @@
 		369ABF55220E8E1D00363286 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF54220E8E1D00363286 /* Assets.xcassets */; };
 		369ABF58220E8E1D00363286 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 369ABF56220E8E1D00363286 /* LaunchScreen.storyboard */; };
 		369ABF64220ED0F600363286 /* LoginRegisterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369ABF63220ED0F600363286 /* LoginRegisterController.swift */; };
-		36BC1C162223F6520083210E /* ChatRoomController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BC1C152223F6520083210E /* ChatRoomController.swift */; };
+		36BC1C162223F6520083210E /* ChatRoomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36BC1C152223F6520083210E /* ChatRoomViewController.swift */; };
 		36D988FC221426E700751C3E /* ChatPartnersController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D988FB221426E700751C3E /* ChatPartnersController.swift */; };
 		36D988FF22142F2E00751C3E /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D988FE22142F2E00751C3E /* User.swift */; };
 		36EBE6592407EF3000EF0A57 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EBE6582407EF3000EF0A57 /* UIKitExtensions.swift */; };
@@ -52,7 +52,7 @@
 		369ABF57220E8E1D00363286 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		369ABF59220E8E1D00363286 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		369ABF63220ED0F600363286 /* LoginRegisterController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginRegisterController.swift; sourceTree = "<group>"; };
-		36BC1C152223F6520083210E /* ChatRoomController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRoomController.swift; sourceTree = "<group>"; };
+		36BC1C152223F6520083210E /* ChatRoomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRoomViewController.swift; sourceTree = "<group>"; };
 		36D988FB221426E700751C3E /* ChatPartnersController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatPartnersController.swift; sourceTree = "<group>"; };
 		36D988FE22142F2E00751C3E /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		36EBE6582407EF3000EF0A57 /* UIKitExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
@@ -139,7 +139,7 @@
 				369ABF63220ED0F600363286 /* LoginRegisterController.swift */,
 				369ABF4F220E8E1D00363286 /* FriendsViewController.swift */,
 				36D988FB221426E700751C3E /* ChatPartnersController.swift */,
-				36BC1C152223F6520083210E /* ChatRoomController.swift */,
+				36BC1C152223F6520083210E /* ChatRoomViewController.swift */,
 			);
 			path = ViewController;
 			sourceTree = "<group>";
@@ -386,7 +386,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				36BC1C162223F6520083210E /* ChatRoomController.swift in Sources */,
+				36BC1C162223F6520083210E /* ChatRoomViewController.swift in Sources */,
 				36D988FC221426E700751C3E /* ChatPartnersController.swift in Sources */,
 				3651A670222529A200185647 /* Message.swift in Sources */,
 				36D988FF22142F2E00751C3E /* User.swift in Sources */,

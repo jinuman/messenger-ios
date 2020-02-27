@@ -257,20 +257,20 @@ extension FriendsViewController: UITableViewDataSource, UITableViewDelegate {
         didSelectRowAt indexPath: IndexPath)
     {
         let message = messages[indexPath.row]
-        guard let partnerId = message.chatPartnerId() else {
-            return
-        }
-        // Get partner info.
-        let ref = Database.database().reference().child("users").child(partnerId)
-        ref.observeSingleEvent(of: .value) { [weak self] (snapshot) in
-            guard
-                let self = self,
-                let dictionary = snapshot.value as? [String: Any],
-                let partner = User(dictionary: dictionary) else {
-                    return
-            }
-            partner.id = partnerId
-            self.showChatRoomController(for: partner)
+        guard let partnerId = message.chatPartnerId() else { return }
+        
+        // Fetch partner info
+        
+        Database.database().reference()
+            .child("users")
+            .child(partnerId)
+            .observeSingleEvent(of: .value) { [weak self] (snapshot) in
+                guard let `self` = self,
+                    let dictionary = snapshot.value as? [String: Any],
+                    let partner = User(dictionary: dictionary) else { return }
+                
+                partner.id = partnerId
+                self.moveToChatRoom(for: partner)
         }
     }
     
@@ -308,17 +308,19 @@ extension FriendsViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
+// MARK: - Extensions
+
 extension FriendsViewController: ChatPartnersControllerDelegate {
     
-    func showChatRoomController(for user: User) {
-        let chatRoomController = ChatRoomController(collectionViewLayout: UICollectionViewFlowLayout())
-        chatRoomController.partner = user
+    func moveToChatRoom(for user: User) {
+        let chatRoomViewController = ChatRoomViewController()
+        chatRoomViewController.partner = user
         
         let backItem = UIBarButtonItem()
         backItem.title = "뒤로"
-        navigationItem.backBarButtonItem = backItem
+        self.navigationItem.backBarButtonItem = backItem
         
-        navigationController?.pushViewController(chatRoomController, animated: true)
+        self.navigationController?.pushViewController(chatRoomViewController, animated: true)
     }
 }
 

@@ -108,6 +108,11 @@ extension UITableView {
 
 extension UICollectionView {
     
+    func setContentInsetWithScrollIndicatorsInset(contentInset: UIEdgeInsets) {
+        self.contentInset = contentInset
+        self.scrollIndicatorInsets = contentInset
+    }
+    
     func registerNibName(_ name: String) {
         register(UINib(nibName: name, bundle: nil), forCellWithReuseIdentifier: name)
     }

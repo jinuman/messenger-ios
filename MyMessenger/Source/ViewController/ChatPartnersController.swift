@@ -10,7 +10,7 @@ import UIKit
 import FirebaseDatabase
 
 protocol ChatPartnersControllerDelegate: class {
-    func showChatRoomController(for user: User)
+    func moveToChatRoom(for user: User)
 }
 
 // Show available chat partners
@@ -99,7 +99,7 @@ extension ChatPartnersController {
                 return
             }
             let user = self.users[indexPath.row]
-            self.delegate?.showChatRoomController(for: user)
+            self.delegate?.moveToChatRoom(for: user)
         }
     }
 }
